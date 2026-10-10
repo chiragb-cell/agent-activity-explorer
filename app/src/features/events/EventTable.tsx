@@ -1,8 +1,18 @@
 // The event list: a semantic <table> (screen readers get real rows and column headers)
 // in its own scroll container, virtualized by hand so any number of loaded events stays
-// fast, with a footer that loads the next page.
+// fast, with keyboard navigation and a footer that loads the next page.
 
-import { memo, useEffect, useRef, type MouseEvent, type Ref, type RefObject } from 'react'
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type Ref,
+  type RefObject,
+} from 'react'
 import type { EventSummary } from '../../api/schemas'
 import { Button } from '../../components/Button'
 import { StatusBadge } from '../../components/StatusBadge'
@@ -50,11 +60,70 @@ export function EventTable({
   scrollerRef,
 }: EventTableProps) {
   const headerRef = useRef<HTMLTableSectionElement>(null)
-  const { start, end, padTop, padBottom, measureRow } = useVirtualRows({
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
+  const { start, end, padTop, padBottom, measureRow, scrollToIndex, pageSize } = useVirtualRows({
     count: events.length,
     scrollerRef,
     headerRef,
   })
+
+  // Keyboard: the whole list is one tab stop (roving tabindex). Only the "active" row's
+  // link is tabbable; arrow keys move it. A new result set starts again from the top.
+  const listKey = events[0]?.id
+  const [cursor, setCursor] = useState({ index: 0, listKey })
+  if (cursor.listKey !== listKey) setCursor({ index: 0, listKey })
+  const activeIndex = Math.min(cursor.index, Math.max(0, events.length - 1))
+  const pendingFocus = useRef<number | null>(null)
+  const lastFocused = useRef<HTMLElement | null>(null)
+
+  function moveTo(index: number) {
+    if (events.length === 0) return
+    const next = Math.min(Math.max(index, 0), events.length - 1)
+    setCursor({ index: next, listKey })
+    pendingFocus.current = next
+    scrollToIndex(next)
+  }
+
+  // Focus the row the keyboard moved to, once it is rendered. preventScroll: scrollToIndex
+  // already placed it below the sticky header, which focus() on its own wouldn't respect.
+  useLayoutEffect(() => {
+    if (pendingFocus.current === null) return
+    const link = bodyRef.current?.querySelector<HTMLElement>(
+      `tr[data-index="${pendingFocus.current}"] a`,
+    )
+    if (!link) return
+    link.focus({ preventScroll: true })
+    pendingFocus.current = null
+  })
+
+  // If the focused row scrolls out of the window it is removed from the DOM, and focus
+  // would fall to <body> (browsers don't reliably fire blur on removal, so check directly).
+  // Keep focus in the list instead; the arrow keys then resume from the same row.
+  // Runs after every render: it is two property reads, and any render can drop rows.
+  useLayoutEffect(() => {
+    const focused = lastFocused.current
+    if (focused && !focused.isConnected && document.activeElement === document.body) {
+      scrollerRef.current?.focus({ preventScroll: true })
+    }
+  })
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.altKey || event.ctrlKey || event.metaKey || stale) return
+    const targets: Record<string, number> = {
+      ArrowDown: activeIndex + 1,
+      j: activeIndex + 1,
+      ArrowUp: activeIndex - 1,
+      k: activeIndex - 1,
+      Home: 0,
+      End: events.length - 1,
+      PageDown: activeIndex + pageSize(),
+      PageUp: activeIndex - pageSize(),
+    }
+    const next = targets[event.key]
+    if (next === undefined) return
+    event.preventDefault() // otherwise the scroller would also scroll natively
+    moveTo(next)
+  }
 
   // One delegated handler makes the whole row clickable. Mouse convenience only: the
   // link in each row's first cell is the keyboard and screen-reader path.
@@ -64,21 +133,39 @@ export function EventTable({
     if (target.closest('a, button, input')) return
     // Don't hijack a click that ends a text selection (e.g. copying an agent name).
     if (window.getSelection()?.toString()) return
-    const id = target.closest<HTMLTableRowElement>('tr[data-event-id]')?.dataset.eventId
-    if (!id) return
+    const row = target.closest<HTMLTableRowElement>('tr[data-event-id]')
+    const id = row?.dataset.eventId
+    if (!row || !id) return
+    setCursor({ index: Number(row.dataset.index), listKey })
     if (event.metaKey || event.ctrlKey) window.open(hrefFor(id), '_blank', 'noopener')
     else onOpen(id)
   }
 
   return (
-    <div ref={scrollerRef} className={styles.scroller}>
+    // The scroller is the list's keyboard surface: arrow keys from any row (or from the
+    // scroller itself, after a focus rescue) move between rows.
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      ref={scrollerRef}
+      className={styles.scroller}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      onFocus={(event) => {
+        lastFocused.current = event.target
+        // Keep the roving cursor where focus actually is (Tab, click or programmatic).
+        const row = event.target.closest<HTMLTableRowElement>('tr[data-index]')
+        if (row) setCursor({ index: Number(row.dataset.index), listKey })
+      }}
+    >
       <table
         className={cx(styles.table, stale && styles.stale)}
         aria-rowcount={total === undefined ? -1 : total + 1}
         aria-busy={stale || skeleton || undefined}
         inert={stale}
       >
-        <caption className="visually-hidden">Agent tool calls, newest first</caption>
+        <caption className="visually-hidden">
+          Agent tool calls, newest first. Use the arrow keys to move between rows.
+        </caption>
         <colgroup>
           <col className={styles.colTime} />
           <col className={styles.colAgent} />
@@ -104,7 +191,7 @@ export function EventTable({
           </tr>
         </thead>
         {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- each row's link is the keyboard path; this is a mouse shortcut */}
-        <tbody onClick={handleBodyClick}>
+        <tbody ref={bodyRef} onClick={handleBodyClick}>
           {skeleton ? <SkeletonRows /> : null}
           {padTop > 0 ? <Spacer height={padTop} /> : null}
           {events.slice(start, end).map((event, offset) => {
@@ -114,6 +201,7 @@ export function EventTable({
                 key={event.id}
                 event={event}
                 index={index}
+                active={index === activeIndex}
                 selected={event.id === selectedId}
                 href={hrefFor(event.id)}
                 onOpen={onOpen}
@@ -147,6 +235,8 @@ interface EventRowProps {
   event: EventSummary
   /** Position in the loaded list (0-based). */
   index: number
+  /** The keyboard cursor: the one row whose link is in the tab order. */
+  active: boolean
   selected: boolean
   href: string
   onOpen: (id: string) => void
@@ -154,10 +244,11 @@ interface EventRowProps {
   rowRef?: Ref<HTMLTableRowElement>
 }
 
-// Memoised: selecting a row re-renders only the old and new selection, not the window.
+// Memoised: moving the cursor or the selection re-renders two rows, not the window.
 const EventRow = memo(function EventRow({
   event,
   index,
+  active,
   selected,
   href,
   onOpen,
@@ -176,6 +267,7 @@ const EventRow = memo(function EventRow({
         <a
           href={href}
           className={styles.rowLink}
+          tabIndex={active ? 0 : -1}
           aria-current={selected ? 'true' : undefined}
           data-event-link={event.id}
           onClick={(e) => {

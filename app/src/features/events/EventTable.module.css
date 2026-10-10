@@ -199,3 +199,9 @@
   padding: 0;
   border: 0;
 }
+
+/* The scroller only takes focus to keep keyboard navigation alive after a focused row
+   scrolls out of the window; there is nothing meaningful to outline. */
+.scroller:focus {
+  outline: none;
+}
