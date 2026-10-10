@@ -1,0 +1,82 @@
+{
+  "label": "fix-05-scroll",
+  "url": "http://localhost:5176",
+  "measuredAt": "2026-10-10T13:45:37.883Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "scroll": {
+      "frames": 289,
+      "frameP50Ms": 7.1,
+      "frameP95Ms": 389,
+      "worstFrameMs": 417,
+      "jankyFrames": 40,
+      "scrollEvents": 63,
+      "longTaskMs": 15261,
+      "layoutCount": 454,
+      "layoutMs": 242,
+      "styleRecalcCount": 743,
+      "styleMs": 293,
+      "scriptMs": 14285,
+      "taskMs": 17343,
+      "layoutsPerScrollEvent": 7.21
+    }
+  },
+  "raw": {
+    "scroll": [
+      {
+        "frames": 294,
+        "frameP50Ms": 7.099999999999454,
+        "frameP95Ms": 388.7999999999993,
+        "worstFrameMs": 409.5,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15238,
+        "layoutCount": 454,
+        "layoutMs": 265.48499999999996,
+        "styleRecalcCount": 747,
+        "styleMs": 293.671,
+        "scriptMs": 14170.235,
+        "taskMs": 17278.073,
+        "layoutsPerScrollEvent": 7.2063492063492065
+      },
+      {
+        "frames": 288,
+        "frameP50Ms": 7.100000000000364,
+        "frameP95Ms": 389.10000000000036,
+        "worstFrameMs": 416.7999999999993,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15539,
+        "layoutCount": 454,
+        "layoutMs": 242.16500000000008,
+        "styleRecalcCount": 742,
+        "styleMs": 293.495,
+        "scriptMs": 14529.900000000001,
+        "taskMs": 17634.326,
+        "layoutsPerScrollEvent": 7.2063492063492065
+      },
+      {
+        "frames": 289,
+        "frameP50Ms": 7.099999999999909,
+        "frameP95Ms": 388.89999999999964,
+        "worstFrameMs": 416.7999999999993,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15261,
+        "layoutCount": 454,
+        "layoutMs": 233.29000000000005,
+        "styleRecalcCount": 743,
+        "styleMs": 275.409,
+        "scriptMs": 14285.014000000001,
+        "taskMs": 17342.662999999997,
+        "layoutsPerScrollEvent": 7.2063492063492065
+      }
+    ]
+  }
+}

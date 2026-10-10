@@ -212,11 +212,27 @@ function onScroll() {
   const focused = resultsList.querySelector('.in-focus');
   if (focused) {
     const minute = focused.dataset.minute;
-    const sameMinute = window.ACTIVITY.filter((event) => new Date(event.timestamp).toISOString().slice(11, 16) === minute).length;
-    scrollContext.textContent = minute + ' UTC · ' + sameMinute + ' calls that minute';
+    scrollContext.textContent = minute + ' UTC · ' + callsInMinute(minute) + ' calls that minute';
   } else {
     scrollContext.textContent = '';
   }
+}
+
+/* PERF #4: "calls that minute" was recomputed on every scroll event by filtering all
+   100,000 events and allocating a Date for each (new Date(..).toISOString() just to read
+   back the same UTC string). The counts never change, so they're computed once, on first
+   use, into a Map; each scroll is now an O(1) lookup. */
+let callsPerMinute = null;
+
+function callsInMinute(minute) {
+  if (!callsPerMinute) {
+    callsPerMinute = new Map();
+    for (const event of window.ACTIVITY) {
+      const key = event.timestamp.slice(11, 16); // already a UTC ISO string: "HH:MM"
+      callsPerMinute.set(key, (callsPerMinute.get(key) || 0) + 1);
+    }
+  }
+  return callsPerMinute.get(minute) || 0;
 }
 
 function hidePreview() {
