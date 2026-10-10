@@ -1,4 +1,4 @@
-/* PERF #9: without font-display the browser hides text in this font (up to 3 s) until
+/* PERF #12: without font-display the browser hides text in this font (up to 3 s) until
    the file arrives. `swap` shows the text straight away in the fallback font and swaps
    when the web font is ready. (A <link rel="preload"> for the font was measured too and
    made first paint ~4x later here: see PERF.md.) */
@@ -141,7 +141,7 @@ main {
   container-type: inline-size;
 }
 
-/* PERF #3: the marquee animated `left`, a layout property, so the main thread had to
+/* PERF #4: the marquee animated `left`, a layout property, so the main thread had to
    recalculate style and layout on every frame, forever, even on an untouched page.
    `transform` is animated by the compositor, off the main thread. translateX(N%) would
    be relative to the track itself, so container query units keep the exact same path:
@@ -202,7 +202,7 @@ main {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
-  /* PERF #6: the default align-items: stretch makes every card in a row as tall as the
+  /* PERF #14: the default align-items: stretch makes every card in a row as tall as the
      tallest one, which is what equalizeCardHeights() used to compute in JavaScript. */
 }
 
@@ -314,7 +314,7 @@ main {
 
 .row-preview {
   position: fixed;
-  /* PERF #14: anchored at 0,0 and moved with transform, so following the pointer never
+  /* PERF #10: anchored at 0,0 and moved with transform, so following the pointer never
      triggers layout. */
   top: 0;
   left: 0;

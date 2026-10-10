@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Agent Activity</title>
-  <!-- PERF #8: a 327 KB utility stylesheet (css/theme.css) was linked here. No class or
+  <!-- PERF #7: a 327 KB utility stylesheet (css/theme.css) was linked here. No class or
        selector in it matched anything on the page (identical computed styles for all
        1,772 elements without it), but as a stylesheet it blocked first paint. Removed. -->
   <link rel="stylesheet" href="css/app.css">
-  <!-- PERF #7: config.js builds 100,000 events. As a classic script in <head> it blocked
+  <!-- PERF #6: config.js builds 100,000 events. As a classic script in <head> it blocked
        the parser, so nothing could paint until it finished. `defer` lets the page parse
        and paint first; deferred scripts still run in document order, after parsing. -->
   <script defer src="js/config.js"></script>
@@ -25,7 +25,7 @@
 
   <main>
     <section class="hero">
-      <!-- PERF #10: the hero was a 4.27 MB, 1700 px PNG for every screen, and the page's
+      <!-- PERF #3: the hero was a 4.27 MB, 1700 px PNG for every screen, and the page's
            Largest Contentful Paint. Now: AVIF/WebP in four widths (the browser picks one for
            its screen; ~90 KB at a typical laptop width), a JPEG fallback, width/height so its
            space is reserved before any bytes arrive (no layout shift), and fetchpriority=high

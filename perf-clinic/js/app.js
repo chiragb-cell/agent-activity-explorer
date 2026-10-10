@@ -19,7 +19,7 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-/* PERF #13: toLocaleTimeString(locale, options) builds a new Intl formatter on every call:
+/* PERF #15: toLocaleTimeString(locale, options) builds a new Intl formatter on every call:
    ~40 ms for one render's 200 rows at 4x CPU. One shared formatter: ~1.3 ms, same output. */
 const timeFormat = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
@@ -60,14 +60,14 @@ function renderAgents() {
   }).join('');
 }
 
-/* PERF #6: equalizeCardHeights gave cards in a row equal heights by reading offsetTop and
+/* PERF #14: equalizeCardHeights gave cards in a row equal heights by reading offsetTop and
    offsetHeight of every card for every card (O(n²)), interleaved with height writes, so
    each read forced a layout. It ran on each of the 24 image loads and on every resize
    event. CSS grid already stretches items in a row to the tallest one (align-items:
    stretch is the default; the stylesheet had opted out), so the JavaScript is gone and
    .agent-card has min-height: 220px instead. Same heights, zero script. */
 
-/* PERF #3: localStorage is synchronous, and every render parsed the whole "viewed" list,
+/* PERF #9: localStorage is synchronous, and every render parsed the whole "viewed" list,
    scanned it with includes() (O(n) per row), then called setItem 200 times, once per row,
    re-serialising the ever-growing list each time. Now the list lives in memory as a Set
    (O(1) lookups), is read from storage once, and is written once per render, when the
@@ -172,7 +172,7 @@ function renderResults(query) {
   rememberViewed(page);
 }
 
-/* PERF #2: forced synchronous layout. Each cell set a font size and then read scrollWidth,
+/* PERF #8: forced synchronous layout. Each cell set a font size and then read scrollWidth,
    so the browser had to redo layout before every read: up to 7 times per cell, 200 cells
    per render, on every search and every resize event. Now there is one write pass (reset),
    one read pass (a single layout) and one write pass. Text width scales linearly with font
@@ -245,7 +245,7 @@ function updateScrollChrome() {
   backToTop.classList.toggle('visible', pastFirstScreen);
 }
 
-/* PERF #4: "calls that minute" was recomputed on every scroll event by filtering all
+/* PERF #2: "calls that minute" was recomputed on every scroll event by filtering all
    100,000 events and allocating a Date for each (new Date(..).toISOString() just to read
    back the same UTC string). The counts never change, so they're computed once, on first
    use, into a Map; each scroll is now an O(1) lookup. */
@@ -264,7 +264,7 @@ function callsInMinute(minute) {
 // Build the counts while idle, so the first scroll doesn't pay for 100,000 iterations.
 whenIdle(() => callsInMinute(''));
 
-/* PERF #14: on every mousemove (dozens per second) the preview searched all 100,000 events
+/* PERF #10: on every mousemove (dozens per second) the preview searched all 100,000 events
    with Array#find for the hovered row's summary, then moved itself with top/left (layout).
    The summary is already in the row's own DOM, so it's read from there, and only when the
    pointer enters a different row; the preview moves with transform (compositor only), at
@@ -298,7 +298,7 @@ function updatePreview() {
   preview.hidden = false;
 }
 
-/* PERF #12: the live ticker leaked three ways:
+/* PERF #13: the live ticker leaked three ways:
    1. its setInterval was never cleared, so every open/close left another interval running
       forever (10 cycles = 10 intervals, 20 callbacks/s), adding rows to detached lists;
    2. every open added a resize and a keydown listener that were never removed;
@@ -374,7 +374,7 @@ searchInput.addEventListener('input', () => {
   searchTimer = setTimeout(() => renderResults(searchInput.value), 150);
 });
 window.addEventListener('scroll', onScroll, { passive: true });
-// PERF #2: resize fires many times per second while dragging; refit at most once per frame.
+// PERF #8: resize fires many times per second while dragging; refit at most once per frame.
 let fitFrame = 0;
 window.addEventListener('resize', () => {
   if (fitFrame) return;
