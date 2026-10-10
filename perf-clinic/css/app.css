@@ -35,7 +35,10 @@ body {
   top: 0;
   left: 0;
   height: 3px;
-  width: 0;
+  /* PERF #5: scaled with transform (compositor only) instead of animating width (layout). */
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
   background: var(--accent);
   z-index: 20;
 }
@@ -53,7 +56,10 @@ body {
   transition: box-shadow 0.2s;
 }
 
+/* PERF #5: compact once you start scrolling (one layout), instead of rewriting the header's
+   padding on every scroll event, which re-laid out everything below it. */
 .topbar-raised {
+  padding-block: 6px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
@@ -263,9 +269,10 @@ main {
   transition: background 0.15s;
 }
 
+/* PERF #5: an inset shadow draws the same accent without changing the row's box, so
+   highlighting rows while scrolling costs a repaint, not a layout. */
 .result-row.in-focus {
-  padding-left: 13px;
-  border-left: 3px solid var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
   background: var(--surface-raised);
 }
 

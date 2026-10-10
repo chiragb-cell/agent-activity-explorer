@@ -176,6 +176,7 @@ function renderResults(query) {
     );
   }).join('');
   fitSummaries();
+  observeRows();
   rememberViewed(page);
 }
 
@@ -195,27 +196,61 @@ function fitSummaries() {
   });
 }
 
+/* PERF #5: the scroll handler ran on every scroll event and, for each of 200 rows, removed
+   a class (a write) and then called getBoundingClientRect (a read), forcing a synchronous
+   layout per row. It also rewrote the header's padding (re-laying out the page below it)
+   and animated the progress bar's width.
+
+   Now an IntersectionObserver tells us which rows cross the reading band (30-60% of the
+   viewport), with no layout reads on our side; the remaining scroll work runs at most
+   once per frame, reads before it writes, and only touches compositor-friendly
+   properties (transform) or toggles classes. */
+let focusObserver = null;
+
+function observeRows() {
+  if (focusObserver) focusObserver.disconnect();
+  const rows = resultsList.querySelectorAll('.result-row');
+  if (!rows.length) return;
+  // Same rule as before: a row is "in focus" while its *top edge* is between 30% and 60%
+  // of the viewport. An observer reports any overlap, so the band's top is moved down by
+  // one row height, which turns "overlaps the band" into exactly "top edge inside it".
+  // (Rows all have the same height; this is recomputed on every render and resize.)
+  const rowHeight = rows[0].offsetHeight;
+  const top = Math.round(window.innerHeight * 0.3 + rowHeight);
+  const bottom = Math.round(window.innerHeight * 0.4);
+  focusObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) entry.target.classList.toggle('in-focus', entry.isIntersecting);
+      updateScrollContext();
+    },
+    { rootMargin: '-' + top + 'px 0px -' + bottom + 'px 0px' },
+  );
+  rows.forEach((row) => focusObserver.observe(row));
+}
+
+function updateScrollContext() {
+  const focused = resultsList.querySelector('.in-focus');
+  scrollContext.textContent = focused
+    ? focused.dataset.minute + ' UTC · ' + callsInMinute(focused.dataset.minute) + ' calls that minute'
+    : '';
+}
+
+let scrollFrame = 0;
+
 function onScroll() {
+  if (!scrollFrame) scrollFrame = requestAnimationFrame(updateScrollChrome);
+}
+
+function updateScrollChrome() {
+  scrollFrame = 0;
+  // Reads first...
   const scrolled = window.scrollY;
   const max = document.documentElement.scrollHeight - window.innerHeight;
-  progress.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + '%';
+  const pastFirstScreen = scrolled > window.innerHeight;
+  // ...then writes, so nothing in between forces another layout.
+  progress.style.transform = 'scaleX(' + (max > 0 ? scrolled / max : 0) + ')';
   topbar.classList.toggle('topbar-raised', scrolled > 8);
-  topbar.style.paddingBlock = Math.max(6, 12 - scrolled / 20) + 'px';
-  backToTop.classList.toggle('visible', scrolled > window.innerHeight);
-  resultsList.querySelectorAll('.result-row').forEach((row) => {
-    row.classList.remove('in-focus');
-    const rect = row.getBoundingClientRect();
-    if (rect.top > window.innerHeight * 0.3 && rect.top < window.innerHeight * 0.6) {
-      row.classList.add('in-focus');
-    }
-  });
-  const focused = resultsList.querySelector('.in-focus');
-  if (focused) {
-    const minute = focused.dataset.minute;
-    scrollContext.textContent = minute + ' UTC · ' + callsInMinute(minute) + ' calls that minute';
-  } else {
-    scrollContext.textContent = '';
-  }
+  backToTop.classList.toggle('visible', pastFirstScreen);
 }
 
 /* PERF #4: "calls that minute" was recomputed on every scroll event by filtering all
@@ -234,6 +269,8 @@ function callsInMinute(minute) {
   }
   return callsPerMinute.get(minute) || 0;
 }
+// Build the counts while idle, so the first scroll doesn't pay for 100,000 iterations.
+whenIdle(() => callsInMinute(''));
 
 function hidePreview() {
   preview.hidden = true;
@@ -311,7 +348,7 @@ searchInput.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => renderResults(searchInput.value), 150);
 });
-window.addEventListener('scroll', onScroll);
+window.addEventListener('scroll', onScroll, { passive: true });
 window.addEventListener('resize', equalizeCardHeights);
 // PERF #2: resize fires many times per second while dragging; refit at most once per frame.
 let fitFrame = 0;
@@ -320,12 +357,15 @@ window.addEventListener('resize', () => {
   fitFrame = requestAnimationFrame(() => {
     fitFrame = 0;
     fitSummaries();
+    observeRows(); // the reading band is a share of the viewport height
   });
 });
 resultsList.addEventListener('mousemove', showPreview);
 resultsList.addEventListener('mouseleave', hidePreview);
-resultsList.addEventListener('wheel', hidePreview);
-resultsList.addEventListener('touchstart', hidePreview);
+// PERF #5: wheel/touchstart listeners on an element default to non-passive, so the browser
+// had to wait for them before it could scroll. They never call preventDefault.
+resultsList.addEventListener('wheel', hidePreview, { passive: true });
+resultsList.addEventListener('touchstart', hidePreview, { passive: true });
 backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 tickerToggle.addEventListener('click', () => (tickerPanel ? closeTicker() : openTicker()));
 
