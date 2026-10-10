@@ -1,0 +1,310 @@
+{
+  "label": "before",
+  "url": "http://localhost:5175",
+  "measuredAt": "2026-10-10T13:29:34.537Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "load": {
+      "fcpMs": 5664,
+      "lcpMs": 8172,
+      "cls": 0,
+      "loadEventMs": 8156,
+      "tbtMs": 0,
+      "longTaskMs": 4953,
+      "requests": 19,
+      "transferKB": 6464
+    },
+    "typing": {
+      "worstKeystrokeMs": 4112,
+      "resultsShownAfterLastKeyMs": 1049,
+      "longTaskMs": 10532,
+      "blockingMs": 10182,
+      "viewedStorageKB": 6.08,
+      "layoutCount": 8829,
+      "layoutMs": 4004,
+      "styleRecalcCount": 10223,
+      "styleMs": 509,
+      "scriptMs": 6198,
+      "taskMs": 13531
+    },
+    "scroll": {
+      "frames": 243,
+      "frameP50Ms": 20.7,
+      "frameP95Ms": 389,
+      "worstFrameMs": 438,
+      "jankyFrames": 40,
+      "scrollEvents": 63,
+      "longTaskMs": 15383,
+      "layoutCount": 696,
+      "layoutMs": 311,
+      "styleRecalcCount": 735,
+      "styleMs": 220,
+      "scriptMs": 14356,
+      "taskMs": 18382,
+      "layoutsPerScrollEvent": 11.05
+    },
+    "hover": {
+      "scriptMsPerMove": 10.24,
+      "longTaskMs": 0,
+      "layoutCount": 303,
+      "layoutMs": 128,
+      "styleRecalcCount": 303,
+      "styleMs": 81.08,
+      "scriptMs": 1024,
+      "taskMs": 2794
+    },
+    "resize": {
+      "longTaskMs": 6613,
+      "layoutCount": 13183,
+      "layoutMs": 5838,
+      "styleRecalcCount": 13173,
+      "styleMs": 643,
+      "scriptMs": 457,
+      "taskMs": 7132
+    },
+    "idle": {
+      "layoutsPerSecond": 143,
+      "styleRecalcsPerSecond": 143,
+      "mainThreadMsPerSecond": 854
+    },
+    "ticker": {
+      "liveIntervalsAfterClosing": 10,
+      "extraEventListeners": 11,
+      "tickerCallbacksPerSecondWhileClosed": 20,
+      "domNodesRetainedPer5sWhileClosed": 1477,
+      "heapGrowthKBPer5sWhileClosed": 8.06
+    }
+  },
+  "raw": {
+    "load": [
+      {
+        "fcpMs": 6132,
+        "lcpMs": 8540,
+        "cls": 0,
+        "loadEventMs": 8528.300000011921,
+        "tbtMs": 0,
+        "longTaskMs": 5393,
+        "requests": 20,
+        "transferKB": 6464.5029296875
+      },
+      {
+        "fcpMs": 5592,
+        "lcpMs": 8100,
+        "cls": 0,
+        "loadEventMs": 8079.199999988079,
+        "tbtMs": 0,
+        "longTaskMs": 4856,
+        "requests": 19,
+        "transferKB": 6464.494140625
+      },
+      {
+        "fcpMs": 5664,
+        "lcpMs": 8172,
+        "cls": 0,
+        "loadEventMs": 8155.5,
+        "tbtMs": 0,
+        "longTaskMs": 4953,
+        "requests": 19,
+        "transferKB": 6464.494140625
+      }
+    ],
+    "typing": [
+      {
+        "worstKeystrokeMs": 4112,
+        "resultsShownAfterLastKeyMs": 1055,
+        "longTaskMs": 10532,
+        "blockingMs": 10182,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 8834,
+        "layoutMs": 4004.0370000000003,
+        "styleRecalcCount": 10228,
+        "styleMs": 501.46599999999995,
+        "scriptMs": 6177.562,
+        "taskMs": 13529.951000000001
+      },
+      {
+        "worstKeystrokeMs": 4128,
+        "resultsShownAfterLastKeyMs": 1048.5,
+        "longTaskMs": 10687,
+        "blockingMs": 10337,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 8826,
+        "layoutMs": 4103.896,
+        "styleRecalcCount": 10220,
+        "styleMs": 518.6200000000001,
+        "scriptMs": 6198.389,
+        "taskMs": 13711.199
+      },
+      {
+        "worstKeystrokeMs": 4080,
+        "resultsShownAfterLastKeyMs": 1013.3000000119209,
+        "longTaskMs": 10518,
+        "blockingMs": 10168,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 8829,
+        "layoutMs": 3908.6100000000006,
+        "styleRecalcCount": 10223,
+        "styleMs": 509.30000000000007,
+        "scriptMs": 6253.552,
+        "taskMs": 13530.845
+      }
+    ],
+    "scroll": [
+      {
+        "frames": 243,
+        "frameP50Ms": 20.799999999999272,
+        "frameP95Ms": 395.8000000000011,
+        "worstFrameMs": 444.5,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15514,
+        "layoutCount": 695,
+        "layoutMs": 342.99799999999993,
+        "styleRecalcCount": 734,
+        "styleMs": 220.853,
+        "scriptMs": 14428.178,
+        "taskMs": 18632.258,
+        "layoutsPerScrollEvent": 11.031746031746032
+      },
+      {
+        "frames": 242,
+        "frameP50Ms": 20.599999999998545,
+        "frameP95Ms": 389,
+        "worstFrameMs": 437.7000000000007,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15383,
+        "layoutCount": 696,
+        "layoutMs": 310.59100000000007,
+        "styleRecalcCount": 735,
+        "styleMs": 220.333,
+        "scriptMs": 14355.855,
+        "taskMs": 18382.482,
+        "layoutsPerScrollEvent": 11.047619047619047
+      },
+      {
+        "frames": 248,
+        "frameP50Ms": 20.700000000000728,
+        "frameP95Ms": 388.6999999999971,
+        "worstFrameMs": 410,
+        "jankyFrames": 40,
+        "scrollEvents": 63,
+        "longTaskMs": 15141,
+        "layoutCount": 701,
+        "layoutMs": 310.802,
+        "styleRecalcCount": 740,
+        "styleMs": 200.06799999999998,
+        "scriptMs": 14093.139,
+        "taskMs": 18163.612,
+        "layoutsPerScrollEvent": 11.126984126984127
+      }
+    ],
+    "hover": [
+      {
+        "scriptMsPerMove": 10.067110000000001,
+        "longTaskMs": 52,
+        "layoutCount": 302,
+        "layoutMs": 118.33999999999989,
+        "styleRecalcCount": 302,
+        "styleMs": 75.04400000000003,
+        "scriptMs": 1006.7110000000001,
+        "taskMs": 2740.0680000000007
+      },
+      {
+        "scriptMsPerMove": 10.24203,
+        "longTaskMs": 0,
+        "layoutCount": 313,
+        "layoutMs": 128.42700000000008,
+        "styleRecalcCount": 313,
+        "styleMs": 85.172,
+        "scriptMs": 1024.203,
+        "taskMs": 2794.1589999999997
+      },
+      {
+        "scriptMsPerMove": 10.559070000000004,
+        "longTaskMs": 0,
+        "layoutCount": 303,
+        "layoutMs": 131.22999999999996,
+        "styleRecalcCount": 303,
+        "styleMs": 81.07599999999998,
+        "scriptMs": 1055.9070000000004,
+        "taskMs": 2802.357000000001
+      }
+    ],
+    "resize": [
+      {
+        "longTaskMs": 7972,
+        "layoutCount": 13141,
+        "layoutMs": 6825.952,
+        "styleRecalcCount": 13131,
+        "styleMs": 863.8100000000001,
+        "scriptMs": 567.3689999999993,
+        "taskMs": 8662.723999999998
+      },
+      {
+        "longTaskMs": 6516,
+        "layoutCount": 13218,
+        "layoutMs": 5702.265,
+        "styleRecalcCount": 13208,
+        "styleMs": 635.3059999999999,
+        "scriptMs": 456.63300000000004,
+        "taskMs": 7011.721
+      },
+      {
+        "longTaskMs": 6613,
+        "layoutCount": 13183,
+        "layoutMs": 5838.112,
+        "styleRecalcCount": 13173,
+        "styleMs": 642.906,
+        "scriptMs": 434.48500000000047,
+        "taskMs": 7131.607000000001
+      }
+    ],
+    "idle": [
+      {
+        "layoutsPerSecond": 144,
+        "styleRecalcsPerSecond": 144,
+        "mainThreadMsPerSecond": 853.9813333333335
+      },
+      {
+        "layoutsPerSecond": 143.33333333333334,
+        "styleRecalcsPerSecond": 143.33333333333334,
+        "mainThreadMsPerSecond": 859.657
+      },
+      {
+        "layoutsPerSecond": 143.33333333333334,
+        "styleRecalcsPerSecond": 143.33333333333334,
+        "mainThreadMsPerSecond": 850.0770000000001
+      }
+    ],
+    "ticker": [
+      {
+        "liveIntervalsAfterClosing": 10,
+        "extraEventListeners": 11,
+        "tickerCallbacksPerSecondWhileClosed": 20,
+        "domNodesRetainedPer5sWhileClosed": 1505,
+        "heapGrowthKBPer5sWhileClosed": 8.1328125
+      },
+      {
+        "liveIntervalsAfterClosing": 10,
+        "extraEventListeners": 11,
+        "tickerCallbacksPerSecondWhileClosed": 20,
+        "domNodesRetainedPer5sWhileClosed": 1463,
+        "heapGrowthKBPer5sWhileClosed": 8.03125
+      },
+      {
+        "liveIntervalsAfterClosing": 10,
+        "extraEventListeners": 11,
+        "tickerCallbacksPerSecondWhileClosed": 20,
+        "domNodesRetainedPer5sWhileClosed": 1477,
+        "heapGrowthKBPer5sWhileClosed": 8.0625
+      }
+    ]
+  }
+}

@@ -5,3 +5,6 @@ app/.next/
 dist/
 app/dist/
 .DS_Store
+
+# Perf bench traces are large; regenerate with --trace
+tools/perf-bench/traces/

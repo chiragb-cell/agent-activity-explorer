@@ -2,7 +2,8 @@
   "name": "agent-activity-explorer",
   "private": true,
   "workspaces": [
-    "app"
+    "app",
+    "tools/perf-bench"
   ],
   "scripts": {
     "api": "node scripts/start-server.js",
@@ -14,7 +15,9 @@
     "lint": "npm run lint -w app",
     "format": "npm run format -w app",
     "test": "npm run test -w app",
-    "probe-api": "node scripts/probe-api.mjs"
+    "probe-api": "node scripts/probe-api.mjs",
+    "bench": "node tools/perf-bench/bench.mjs",
+    "bench:compare": "node tools/perf-bench/compare.mjs"
   },
   "engines": {
     "node": ">=22.22"

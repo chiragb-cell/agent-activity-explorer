@@ -1,0 +1,13 @@
+{
+  "name": "perf-bench",
+  "private": true,
+  "type": "module",
+  "description": "Reproducible measurements for the Perf Clinic (Part B). See PERF.md.",
+  "scripts": {
+    "bench": "node bench.mjs",
+    "compare": "node compare.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.64.0"
+  }
+}
