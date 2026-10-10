@@ -25,7 +25,25 @@
 
   <main>
     <section class="hero">
-      <img class="hero-image" src="assets/hero.png" alt="Abstract visual of agent traffic">
+      <!-- PERF #10: the hero was a 4.27 MB, 1700 px PNG for every screen, and the page's
+           Largest Contentful Paint. Now: AVIF/WebP in four widths (the browser picks one for
+           its screen; ~90 KB at a typical laptop width), a JPEG fallback, width/height so its
+           space is reserved before any bytes arrive (no layout shift), and fetchpriority=high
+           because it is the LCP element. -->
+      <picture>
+        <source type="image/avif" sizes="calc(100vw - 64px)"
+                srcset="assets/hero-640.avif 640w,
+                assets/hero-1024.avif 1024w,
+                assets/hero-1440.avif 1440w,
+                assets/hero-1700.avif 1700w">
+        <source type="image/webp" sizes="calc(100vw - 64px)"
+                srcset="assets/hero-640.webp 640w,
+                assets/hero-1024.webp 1024w,
+                assets/hero-1440.webp 1440w,
+                assets/hero-1700.webp 1700w">
+        <img class="hero-image" src="assets/hero-1440.jpg" width="1700" height="950"
+             alt="Abstract visual of agent traffic" fetchpriority="high">
+      </picture>
       <div class="hero-copy">
         <h2>Every tool call, every agent</h2>
         <p>See what your AI agents did today, which tools they reached for, and what was blocked.</p>

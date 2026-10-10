@@ -109,6 +109,8 @@ main {
 .hero-image {
   display: block;
   width: 100%;
+  /* With width/height attributes set, this keeps the aspect ratio while scaling. */
+  height: auto;
 }
 
 .hero-copy {

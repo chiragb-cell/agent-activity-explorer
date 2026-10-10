@@ -1,0 +1,12 @@
+{
+  "name": "optimize-images",
+  "private": true,
+  "type": "module",
+  "description": "Regenerates the Perf Clinic's responsive images. Not an npm workspace on purpose: sharp ships native binaries that nobody needs just to run the app.",
+  "scripts": {
+    "optimize": "node optimize.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.5"
+  }
+}
