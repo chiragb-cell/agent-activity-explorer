@@ -1,1 +1,4 @@
+# Keep text files LF on every OS (Windows Git defaults to autocrlf=true),
+# so formatter checks and diffs are identical for every contributor and in CI.
+* text=auto eol=lf
 bin/** binary
