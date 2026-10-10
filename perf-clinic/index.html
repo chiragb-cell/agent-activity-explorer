@@ -6,7 +6,11 @@
   <title>Agent Activity</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/app.css">
-  <script src="js/config.js"></script>
+  <!-- PERF #7: config.js builds 100,000 events. As a classic script in <head> it blocked
+       the parser, so nothing could paint until it finished. `defer` lets the page parse
+       and paint first; deferred scripts still run in document order, after parsing. -->
+  <script defer src="js/config.js"></script>
+  <script defer src="js/app.js"></script>
 </head>
 <body>
   <div id="read-progress" class="read-progress"></div>
@@ -51,6 +55,5 @@
   <div id="row-preview" class="row-preview" hidden></div>
   <button id="back-to-top" class="back-to-top" type="button" aria-label="Back to top">↑</button>
 
-  <script src="js/app.js"></script>
 </body>
 </html>
