@@ -1,0 +1,39 @@
+/* The app fills the viewport; only the event list and the detail panel scroll. */
+.app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.logo {
+  align-self: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 650;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.main {
+  min-height: 0;
+}
