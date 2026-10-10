@@ -44,10 +44,13 @@ function countByAgent(events) {
 function renderAgents() {
   const counts = countByAgent(window.ACTIVITY);
   grid.innerHTML = window.AGENTS.map((agent, index) => {
-    const image = 'assets/agents/agent-' + String((index % 12) + 1).padStart(2, '0') + '.png';
+    // PERF #11: 6 unique 96x96 WebP avatars (~0.4 KB each) instead of 12 PNGs of ~160 KB
+    // at 320x320 shown at 48x48; agent-07..12 were byte-identical copies of agent-01..06,
+    // so index % 6 picks the very same picture index % 12 did.
+    const image = 'assets/agents/agent-' + String((index % 6) + 1).padStart(2, '0') + '.webp';
     return (
       '<article class="agent-card">' +
-      '<img class="agent-avatar" src="' + image + '" alt="">' +
+      '<img class="agent-avatar" src="' + image + '" width="48" height="48" loading="lazy" decoding="async" alt="">' +
       '<h3>' + escapeHtml(agent.name) + '</h3>' +
       '<p class="agent-owner">' + escapeHtml(agent.owner) + '</p>' +
       '<p class="agent-description">' + escapeHtml(agent.description) + '</p>' +
