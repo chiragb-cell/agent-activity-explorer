@@ -28,6 +28,10 @@ interface EventTableProps {
   onRetryLoadMore: () => void
   /** Previous results stay visible while new ones load: dim them and keep them out of reach. */
   stale: boolean
+  /** Placeholder rows while the first page loads (only after a short delay, so fast loads don't flash). */
+  skeleton: boolean
+  /** The list's scroll container, owned by the page so it can reset the position. */
+  scrollerRef: RefObject<HTMLDivElement | null>
 }
 
 export function EventTable({
@@ -40,9 +44,9 @@ export function EventTable({
   onLoadMore,
   onRetryLoadMore,
   stale,
+  skeleton,
+  scrollerRef,
 }: EventTableProps) {
-  const scrollerRef = useRef<HTMLDivElement>(null)
-
   // One delegated handler makes the whole row clickable. Mouse convenience only: the
   // link in each row's first cell is the keyboard and screen-reader path.
   function handleBodyClick(event: MouseEvent<HTMLTableSectionElement>) {
@@ -62,7 +66,7 @@ export function EventTable({
       <table
         className={cx(styles.table, stale && styles.stale)}
         aria-rowcount={total === undefined ? -1 : total + 1}
-        aria-busy={stale || undefined}
+        aria-busy={stale || skeleton || undefined}
         inert={stale}
       >
         <caption className="visually-hidden">Agent tool calls, newest first</caption>
@@ -92,6 +96,7 @@ export function EventTable({
         </thead>
         {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- each row's link is the keyboard path; this is a mouse shortcut */}
         <tbody onClick={handleBodyClick}>
+          {skeleton ? <SkeletonRows /> : null}
           {events.map((event, index) => (
             <EventRow
               key={event.id}
@@ -171,6 +176,25 @@ const EventRow = memo(function EventRow({
     </tr>
   )
 })
+
+/** Grey bars with varied widths, so the placeholder reads as "rows" rather than a grid. */
+function SkeletonRows() {
+  return Array.from({ length: 14 }, (_, row) => (
+    <tr key={row} className={styles.skeletonRow} aria-hidden="true">
+      {[70, 62, 66, 48, 40, 88].map((base, column) => (
+        <td
+          key={column}
+          className={column === 4 ? styles.numeric : column === 5 ? styles.args : undefined}
+        >
+          <span
+            className={styles.skeletonBar}
+            style={{ width: `${base - ((row * 7 + column * 13) % 22)}%` }}
+          />
+        </td>
+      ))}
+    </tr>
+  ))
+}
 
 interface ListFooterProps {
   state: FooterState
