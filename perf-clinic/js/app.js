@@ -279,21 +279,26 @@ function showPreview(event) {
   preview.hidden = false;
 }
 
-const renderedTickerRows = new Map();
+/* PERF #12: the live ticker leaked three ways:
+   1. its setInterval was never cleared, so every open/close left another interval running
+      forever (10 cycles = 10 intervals, 20 callbacks/s), adding rows to detached lists;
+   2. every open added a resize and a keydown listener that were never removed;
+   3. renderedTickerRows cached a DOM node for every event ever shown and never evicted
+      (a random event out of 100,000 is almost always new, so it only grew).
+   Now the interval is cleared on close, the listeners share an AbortController aborted on
+   close, and rows are built fresh: three spans are cheaper than an ever-growing cache. */
 let tickerPanel = null;
+let tickerTimer = 0;
+let tickerListeners = null;
 
 function tickerRow(event) {
-  if (renderedTickerRows.has(event.id)) {
-    return renderedTickerRows.get(event.id).cloneNode(true);
-  }
   const row = document.createElement('li');
   row.className = 'ticker-row status-' + event.status;
   row.innerHTML =
     '<span class="ticker-time">' + formatTime(event.timestamp) + '</span>' +
     '<span class="ticker-agent">' + escapeHtml(event.agent) + '</span>' +
     '<span class="ticker-tool">' + escapeHtml(event.tool) + '</span>';
-  renderedTickerRows.set(event.id, row);
-  return row.cloneNode(true);
+  return row;
 }
 
 function positionTicker() {
@@ -302,6 +307,7 @@ function positionTicker() {
 }
 
 function openTicker() {
+  if (tickerPanel) return;
   const panel = document.createElement('aside');
   panel.className = 'ticker';
   panel.innerHTML = '<header class="ticker-header">Live tool calls</header><ul class="ticker-list"></ul>';
@@ -309,7 +315,7 @@ function openTicker() {
   tickerPanel = panel;
   const list = panel.querySelector('.ticker-list');
 
-  setInterval(() => {
+  tickerTimer = setInterval(() => {
     const event = window.ACTIVITY[Math.floor(Math.random() * window.ACTIVITY.length)];
     list.prepend(tickerRow(event));
     while (list.children.length > tickerVisibleRows) {
@@ -317,10 +323,16 @@ function openTicker() {
     }
   }, tickerIntervalMs);
 
-  window.addEventListener('resize', positionTicker);
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeTicker();
-  });
+  tickerListeners = new AbortController();
+  const { signal } = tickerListeners;
+  window.addEventListener('resize', positionTicker, { signal });
+  window.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.key === 'Escape') closeTicker();
+    },
+    { signal },
+  );
   positionTicker();
   tickerToggle.setAttribute('aria-pressed', 'true');
   tickerToggle.textContent = 'Hide live calls';
@@ -328,6 +340,8 @@ function openTicker() {
 
 function closeTicker() {
   if (!tickerPanel) return;
+  clearInterval(tickerTimer);
+  tickerListeners.abort(); // removes both listeners added in openTicker
   tickerPanel.remove();
   tickerPanel = null;
   tickerToggle.setAttribute('aria-pressed', 'false');
