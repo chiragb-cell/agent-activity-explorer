@@ -130,14 +130,19 @@ function renderResults(query) {
   rememberViewed(page);
 }
 
+/* PERF #2: forced synchronous layout. Each cell set a font size and then read scrollWidth,
+   so the browser had to redo layout before every read: up to 7 times per cell, 200 cells
+   per render, on every search and every resize event. Now there is one write pass (reset),
+   one read pass (a single layout) and one write pass. Text width scales linearly with font
+   size, so the size that fits comes from one measurement instead of trial and error. */
 function fitSummaries() {
-  resultsList.querySelectorAll('.result-summary').forEach((cell) => {
-    let size = 14;
-    cell.style.fontSize = size + 'px';
-    while (cell.scrollWidth > cell.clientWidth && size > 11) {
-      size -= 0.5;
-      cell.style.fontSize = size + 'px';
-    }
+  const cells = Array.from(resultsList.querySelectorAll('.result-summary'));
+  cells.forEach((cell) => {
+    cell.style.fontSize = '';
+  });
+  const ratios = cells.map((cell) => cell.clientWidth / cell.scrollWidth);
+  cells.forEach((cell, i) => {
+    if (ratios[i] < 1) cell.style.fontSize = Math.max(11, Math.floor(28 * ratios[i]) / 2) + 'px';
   });
 }
 
@@ -243,7 +248,15 @@ searchInput.addEventListener('input', () => {
 });
 window.addEventListener('scroll', onScroll);
 window.addEventListener('resize', equalizeCardHeights);
-window.addEventListener('resize', fitSummaries);
+// PERF #2: resize fires many times per second while dragging; refit at most once per frame.
+let fitFrame = 0;
+window.addEventListener('resize', () => {
+  if (fitFrame) return;
+  fitFrame = requestAnimationFrame(() => {
+    fitFrame = 0;
+    fitSummaries();
+  });
+});
 resultsList.addEventListener('mousemove', showPreview);
 resultsList.addEventListener('mouseleave', hidePreview);
 resultsList.addEventListener('wheel', hidePreview);

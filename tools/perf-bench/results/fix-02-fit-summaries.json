@@ -1,0 +1,108 @@
+{
+  "label": "fix-02-fit-summaries",
+  "url": "http://localhost:5174",
+  "measuredAt": "2026-10-10T13:33:33.151Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "typing": {
+      "worstKeystrokeMs": 920,
+      "resultsShownAfterLastKeyMs": 392,
+      "longTaskMs": 1297,
+      "blockingMs": 1097,
+      "viewedStorageKB": 5.71,
+      "layoutCount": 339,
+      "layoutMs": 347,
+      "styleRecalcCount": 340,
+      "styleMs": 116,
+      "scriptMs": 1083,
+      "taskMs": 4468
+    },
+    "resize": {
+      "longTaskMs": 1304,
+      "layoutCount": 328,
+      "layoutMs": 1460,
+      "styleRecalcCount": 318,
+      "styleMs": 200,
+      "scriptMs": 82.58,
+      "taskMs": 2336
+    }
+  },
+  "raw": {
+    "typing": [
+      {
+        "worstKeystrokeMs": 72,
+        "resultsShownAfterLastKeyMs": 1160.800000011921,
+        "longTaskMs": 994,
+        "blockingMs": 944,
+        "viewedStorageKB": 5.7119140625,
+        "layoutCount": 248,
+        "layoutMs": 204.02200000000005,
+        "styleRecalcCount": 249,
+        "styleMs": 65.05400000000002,
+        "scriptMs": 917.105,
+        "taskMs": 3178.8759999999997
+      },
+      {
+        "worstKeystrokeMs": 920,
+        "resultsShownAfterLastKeyMs": 344.30000001192093,
+        "longTaskMs": 1297,
+        "blockingMs": 1097,
+        "viewedStorageKB": 5.7119140625,
+        "layoutCount": 384,
+        "layoutMs": 347.113,
+        "styleRecalcCount": 385,
+        "styleMs": 128.757,
+        "scriptMs": 1082.886,
+        "taskMs": 4478.421
+      },
+      {
+        "worstKeystrokeMs": 1072,
+        "resultsShownAfterLastKeyMs": 391.5,
+        "longTaskMs": 1593,
+        "blockingMs": 1343,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 339,
+        "layoutMs": 424.7460000000001,
+        "styleRecalcCount": 340,
+        "styleMs": 116.20400000000001,
+        "scriptMs": 1279.562,
+        "taskMs": 4467.724
+      }
+    ],
+    "resize": [
+      {
+        "longTaskMs": 1373,
+        "layoutCount": 332,
+        "layoutMs": 1502.341,
+        "styleRecalcCount": 322,
+        "styleMs": 196.521,
+        "scriptMs": 82.57599999999998,
+        "taskMs": 2493.057
+      },
+      {
+        "longTaskMs": 1304,
+        "layoutCount": 314,
+        "layoutMs": 1459.544,
+        "styleRecalcCount": 304,
+        "styleMs": 199.756,
+        "scriptMs": 93.9620000000001,
+        "taskMs": 2335.587
+      },
+      {
+        "longTaskMs": 1188,
+        "layoutCount": 328,
+        "layoutMs": 1211.8220000000001,
+        "styleRecalcCount": 318,
+        "styleMs": 216.231,
+        "scriptMs": 81.88799999999996,
+        "taskMs": 2249.728
+      }
+    ]
+  }
+}
