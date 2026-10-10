@@ -19,6 +19,9 @@
       "warn",
       { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }
     ],
+    // Table cells are not controls; the rule only looks 2 levels deep for text, so a cell
+    // holding a link (td > a > time > text) was a false positive.
+    "jsx-a11y/control-has-associated-label": ["error", { "ignoreElements": ["td", "th"] }],
     "eqeqeq": "error"
   },
   "ignorePatterns": ["dist", "coverage", "playwright-report", "test-results"]

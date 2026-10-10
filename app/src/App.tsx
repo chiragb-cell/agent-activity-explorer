@@ -1,4 +1,5 @@
 import styles from './App.module.css'
+import { EventsPage } from './features/events/EventsPage'
 
 export function App() {
   return (
@@ -18,7 +19,9 @@ export function App() {
         <h1 className={styles.title}>Agent Activity</h1>
         <p className={styles.tagline}>Every tool call your agents made</p>
       </header>
-      <main className={styles.main} />
+      <main className={styles.main}>
+        <EventsPage />
+      </main>
     </div>
   )
 }

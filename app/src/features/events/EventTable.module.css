@@ -1,0 +1,166 @@
+.scroller {
+  /* The list's own scroll container: the page never scrolls, so the toolbar and the
+     column headers stay put. */
+  container-type: inline-size;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  /* Fixed layout: column widths never jump as rows load or change. */
+  table-layout: fixed;
+  font-size: var(--text-sm);
+  transition: opacity 150ms ease;
+}
+
+.stale {
+  opacity: 0.55;
+}
+
+.colTime {
+  width: 11.5rem;
+}
+.colAgent {
+  width: 11rem;
+}
+.colTool {
+  width: 12rem;
+}
+.colStatus {
+  width: 6.5rem;
+}
+.colLatency {
+  width: 6rem;
+}
+
+.table th,
+.table td {
+  padding: 0 var(--space-3);
+  /* Every cell is one line: hostile payloads have no spaces to wrap on, and a fixed
+     row height keeps scanning (and windowing) predictable. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 2rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.timeZone {
+  font-weight: 400;
+}
+
+.row td {
+  height: var(--row-height);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--color-row-hover);
+}
+
+.selected,
+.selected:hover {
+  background: var(--color-row-selected);
+}
+
+.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.rowLink {
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.rowLink:hover {
+  text-decoration: underline;
+}
+
+/* Show keyboard focus on the whole row, not just the time text. */
+.rowLink:focus-visible {
+  outline: none;
+}
+
+.row:has(.rowLink:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.numeric {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Arguments are the least important column: drop it when the list is narrow (for
+   example with the detail panel open) rather than squeezing the others. */
+@container (max-width: 52rem) {
+  .args {
+    display: none;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.footerNote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.footerError {
+  color: var(--color-error);
+}
+
+.spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
