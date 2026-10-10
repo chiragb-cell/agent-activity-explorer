@@ -19,7 +19,16 @@ I found and fixed **15 distinct problems** in `perf-clinic/`. Each one is its ow
 
 All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.json` vs `after.json`). Frame timing is the noisiest measure: the scroll figure is quoted with its spread over 5 runs.
 
-## How I measured
+## How I found and measured them
+
+The same method for every problem:
+
+1. **Use the page like a user.** I went through every journey it offers: a cold load, typing in search, scrolling, hovering the list, resizing, leaving it idle, and toggling the live ticker.
+2. **Measure before changing anything.** A small harness (below) records each journey the same way every time, so the baseline and every later number are comparable.
+3. **Find the cause in the code.** I started from the slow journey's event handler, then predicted which number a fix should move.
+4. **Change one thing, then re-measure.** Each fix is its own commit, measured against the commit just before it. If the predicted number doesn't move, the diagnosis was wrong.
+5. **Check that nothing else changed.** Every fix was compared against the original page: search results, fitted font sizes, animation positions, "New" badges, card heights, and preview text.
+6. **Order by impact:** how bad it is, times how often it happens, times how many users hit it.
 
 - **Harness:** `tools/perf-bench` is a small Playwright + Chrome DevTools Protocol script, with no framework, that drives real Chrome (v154) through each journey these problems affect:
   - a cold load
@@ -39,16 +48,25 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
   - For load, the network is throttled to 10 Mbps with 40 ms RTT.
   - One extra "returning user" scenario starts with 20,000 viewed ids already stored (see #9).
 - **Attribution:** a "before" number is from the commit *just before* that fix, so one fix doesn't get credit for another. The original page is commit `80e7357`, served on another port. Raw results for every step are in `tools/perf-bench/results/`.
-- **Reproduce:** run `npm run perf-clinic`, then `node tools/perf-bench/bench.mjs --url http://localhost:5174 --label mine`. Compare two runs with `npm run bench:compare -- before.json mine.json`. Add `--trace` to save Chrome traces you can open in the DevTools Performance panel.
-- **DevTools panels used** for finding and confirming problems: Performance (flame chart, "Forced reflow" warnings, Bottom-Up), Performance monitor, Network, Coverage, Memory (heap snapshots), Rendering (paint flashing), and Lighthouse.
+- **Reproduce:**
+  - Run `npm run perf-clinic`, then `node tools/perf-bench/bench.mjs --url http://localhost:5174 --label mine`.
+  - Compare two runs with `npm run bench:compare -- tools/perf-bench/results/before.json tools/perf-bench/results/mine.json`.
+- **Seeing it in DevTools:** the harness reads the same data as the DevTools panels, through the DevTools Protocol. To see a problem by hand, open the original page in Chrome with CPU throttling at 4×. Each problem shows up in:
+  - the Performance panel: long tasks, "Forced reflow" warnings and Bottom-Up;
+  - the Performance monitor: idle layouts and listener counts;
+  - Network: bytes;
+  - Coverage: unused CSS.
+
+  Traces saved with `--trace` open directly in the Performance panel.
 
 ## Problems, ordered by impact on the user (highest first)
 
 ### 1. Typing in search froze the page for seconds per keystroke
 - **Symptom:** every character typed into "Search tool calls" froze the page. Keys appeared late, and the results jumped around afterwards.
 - **How I found it:**
-  - The DevTools Performance panel showed one long task per keystroke, dominated by `search()`.
-  - Event Timing measured the worst keystroke at 4,112 ms.
+  - Typing "billing" at 4× CPU, the harness measured the worst keystroke at **4,112 ms** (Event Timing), with one long task per key.
+  - The `input` handler leads straight to `search()`, which serializes and re-sorts all 100,000 events on every key.
+  - Changing only that function took the worst keystroke to 1,440 ms, which confirmed it.
 - **Root cause:** in `js/app.js`, `search()` ran `JSON.stringify(event).toLowerCase()` on **all 100,000 events** for every keystroke. It then re-sorted the matches with `new Date(b.timestamp) - new Date(a.timestamp)`, which allocates two `Date` objects per comparison: about 3.4 million per keystroke. Nothing was debounced. `JSON.stringify` also matched key names, so searching "tool" matched every event.
 - **Fix** (`ef5b5de`, then `f111042`):
   - Sort once at startup. UTC ISO-8601 strings sort chronologically, so no `Date` objects are needed.
@@ -63,7 +81,10 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 
 ### 2. Scrolling stuttered: a 100,000-event scan on every scroll event
 - **Symptom:** scrolling the page was jerky, with frames that took nearly half a second.
-- **How I found it:** the Performance panel while wheel-scrolling showed long "Function call: onScroll" tasks. In the Bottom-Up view, most of their time was in `Date` and `toISOString`.
+- **How I found it:**
+  - While wheel-scrolling, the p95 frame was 389 ms, and 63 scroll events cost 14.3 s of script (about 228 ms each).
+  - The scroll handler, `onScroll`, filters all 100,000 events on every event, just to produce one label.
+  - Precomputing the counts dropped script time to 259 ms, which confirmed it.
 - **Root cause:** to show "N calls that minute", `onScroll()` filtered all 100,000 events on *every* scroll event. It created a `Date` per event just to read back the UTC string it was built from. That's about 228 ms of script per scroll event at 4× CPU.
 - **Fix** (`5941021`): count calls per minute once, into a `Map` (pre-built in idle time); each scroll event does an O(1) lookup. The label text is identical at every scroll position checked.
 - **Before / after:** p95 frame time **389 → 34.7 ms**, janky frames (over 50 ms) **40 → 1**, script time **14,285 → 259 ms** over 63 scroll events.
@@ -71,8 +92,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 3. The hero image delayed the main content by about 5 seconds
 - **Symptom:** a blank hero area that filled in slowly. The page's largest element arrived last.
 - **How I found it:**
-  - Network panel, sorted by size: one 4.27 MB PNG.
-  - Lighthouse flagged it as the LCP element, as "properly size images", and as "serve next-gen formats".
+  - A cold load downloads 6.4 MB, and 4.27 MB of that is one file: `hero.png`.
+  - The hero is the page's largest element, so it sets Largest Contentful Paint (5,076 ms at 10 Mbps).
+  - The `<img>` had no `width`/`height`. Measured CLS was 0 anyway, so I tested the bad case (below).
 - **Root cause:** `assets/hero.png` was a 1700×950 truecolor PNG (4.27 MB) served to every screen, with no `width`/`height`.
   - Measured CLS was 0, but only because Chrome reads PNG dimensions from the first bytes. When the hero's request arrives late (I delayed it by 2 s to simulate a queued or slow image), **CLS was 0.431**, rated "poor".
 - **Fix** (`fc25793`):
@@ -89,8 +111,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 4. The page kept the CPU 85% busy while sitting idle
 - **Symptom:** with nothing happening on screen, fans spin up and the battery drains. Everything else also has less main thread to work with.
 - **How I found it:**
-  - The Performance monitor on an untouched page showed constant style and layout work.
-  - Rendering → Paint flashing showed the alerts bar repainting nonstop.
+  - Left untouched, the page still ran 143 layouts per second and kept the main thread busy for 854 ms of every second.
+  - The only thing moving was the alerts marquee, and its keyframes animate `left`, a layout property.
+  - Switching it to `transform` brought layouts to 0 per second, which confirmed it.
 - **Root cause:** the alerts marquee animated `left` (`css/app.css`, `@keyframes alerts-scroll`). That's a layout property, so the main thread recalculated style and layout every frame, forever.
 - **Fix** (`d573a35`): animate `transform: translateX()`, which the compositor runs off the main thread.
   - Container query units (`cqw`) keep the exact path of `left: N%`; the position is pixel-identical at 0, 25, 50, 75, and 100% of the animation. Plain `translateX(%)` would have been relative to the track itself.
@@ -102,8 +125,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 5. The scroll handler also forced a layout for every row
 - **Symptom:** remaining scroll jank after #2, and heavier jank on slower devices.
 - **How I found it:**
-  - The Performance panel showed "Forced reflow" warnings inside `onScroll`.
-  - Chrome's console showed a `[Violation]` warning about a non-passive `wheel` listener.
+  - Even after #2, scrolling caused 7.21 layouts per scroll event. More than one layout per event means the code is forcing them.
+  - `onScroll` alternates a class write with a `getBoundingClientRect` read for each of 200 rows, and rewrites the header's padding on every event.
+  - Its `wheel` and `touchstart` listeners were registered without `{ passive: true }`.
 - **Root cause:** for each of 200 rows, `onScroll` removed a class (a write) and then called `getBoundingClientRect` (a read), forcing a synchronous layout per row. It also:
   - rewrote the header's `padding-block`, which re-laid out the page below it;
   - animated the progress bar's `width`;
@@ -120,8 +144,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 6. A data script blocked first paint
 - **Symptom:** a white screen while the page loads.
 - **How I found it:**
-  - The Performance panel (load) showed a long "Evaluate script: config.js" before First Contentful Paint.
-  - Lighthouse flagged "Eliminate render-blocking resources".
+  - On a cold load, nothing painted until 1,768 ms.
+  - Ahead of the body sits `config.js`: a classic `<script>` in `<head>` that builds 100,000 events. The parser has to download and run it before anything can render.
+  - Deferring it moved first paint to 788 ms, which confirmed it.
 - **Root cause:** `config.js`, which builds the 100,000 mock events, was a classic `<script>` in `<head>`. The parser waited for it to download *and run* before anything could render.
 - **Fix** (`b4ea2f8`): both scripts are `defer` in `<head>`. The HTML parses and paints first, the scripts are discovered early, and they still run in order.
 - **Before / after:** First Contentful Paint **1,768 → 788 ms**.
@@ -130,16 +155,18 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 7. A 327 KB unused stylesheet blocked rendering
 - **Symptom:** a slow first paint, and a large download for nothing.
 - **How I found it:**
-  - The Coverage panel showed ~100% of `css/theme.css` unused.
-  - None of the page's classes appear in it, and it has no element selectors.
-  - To prove it before deleting: the computed styles of all 1,772 elements are identical with and without it (with animations frozen).
+  - `css/theme.css` is a 327 KB stylesheet that blocks rendering, but none of the page's classes appear in it, and it has no element selectors.
+  - To prove it was unused before deleting it, I compared the computed styles of all 1,772 elements with and without it, with animations frozen. They were identical.
 - **Root cause:** a utility library (8,603 rules) linked in `<head>`. Every stylesheet there blocks rendering until it has downloaded and been parsed.
 - **Fix** (`56eeed7`): removed it.
 - **Before / after:** First Contentful Paint **788 → 280 ms**; **−319 KB** and one fewer request.
 
 ### 8. Fitting the summaries forced a layout per measurement
 - **Symptom:** typing and resizing felt sticky, even after #1.
-- **How I found it:** the Performance panel showed "Forced reflow" warnings in `fitSummaries`.
+- **How I found it:**
+  - Typing "billing" caused 2,722 layouts.
+  - `fitSummaries` writes a font size and then reads `scrollWidth`, up to 7 times for each of 200 cells. Every read after a write forces a layout.
+  - Batching the reads and writes cut it to 339 layouts, which confirmed it.
 - **Root cause:** for each of 200 cells, it set a font size and then read `scrollWidth`, in a loop of up to 7 times. Every read after a write forces the browser to redo layout ("layout thrashing"). That's up to ~1,400 layouts per render, on every search and every `resize` event.
 - **Fix** (`22a64e9`):
   - One write pass (reset), one read pass (a single layout), one write pass.
@@ -152,8 +179,8 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 9. Storage writes grew with every event the user had seen
 - **Symptom:** search got slower the longer someone used the page.
 - **How I found it:**
-  - `setItem` sits *inside* the loop in `rememberViewed`.
-  - In the Performance panel, `Storage.setItem` and `JSON.stringify` showed up in every render.
+  - In `rememberViewed`, `localStorage.setItem` sits *inside* the per-row loop.
+  - The cost grows with use, so I added a "returning user" journey with 20,000 stored ids. There, the worst keystroke was 6,208 ms, against 4,112 ms on a fresh profile.
 - **Root cause:** every render parsed the whole "viewed" list from `localStorage`, scanned it with `Array#includes` for each row, and then called the synchronous `setItem` 200 times, re-serializing the growing list each time.
 - **Fix** (`89610e2`):
   - Keep the ids in a `Set`, read from storage once, with O(1) lookups.
@@ -168,7 +195,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 
 ### 10. The hover preview searched every event on every mouse move
 - **Symptom:** moving the pointer over the list made the page sluggish.
-- **How I found it:** the Performance panel during pointer movement showed a stack of `mousemove` tasks inside `Array.prototype.find`.
+- **How I found it:**
+  - Moving the pointer over the list cost 11.8 ms of script per mouse move.
+  - `showPreview` runs `ACTIVITY.find()` over 100,000 events to get text that's already in the row.
 - **Root cause:** on every `mousemove` (dozens per second), `showPreview` searched all 100,000 events for the hovered row's summary, which was already rendered in that row. It then moved the preview with `top`/`left`, which triggers layout.
 - **Fix** (`5ca1ee4`):
   - Read the summary from the row itself, and only when the pointer enters a different row.
@@ -178,7 +207,9 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 
 ### 11. Avatars were 44× bigger than displayed, and downloaded twice
 - **Symptom:** 1.9 MB of images for twelve 48 px icons.
-- **How I found it:** the Network panel and Lighthouse's "Properly size images". An `md5` check showed that `agent-07…12.png` are byte-identical copies of `agent-01…06.png`.
+- **How I found it:**
+  - The 12 avatar requests add up to 1.9 MB: 320×320 PNGs shown at 48×48.
+  - An `md5` check showed that `agent-07…12.png` are byte-identical copies of `agent-01…06.png`.
 - **Root cause:** 320×320 PNGs at ~160 KB each, shown at 48×48, with no `width`/`height`. Twelve files held six pictures.
 - **Fix** (`8384574`):
   - Six 96×96 WebP files (2× density), at ~0.4 KB each.
@@ -189,8 +220,8 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 12. Text was invisible while the web font loaded
 - **Symptom:** the headline and labels appeared late on a cold load.
 - **How I found it:**
-  - The Performance panel filmstrip showed blank text first, then text.
-  - Lighthouse flagged "Ensure text remains visible during webfont load".
+  - On a cold load, the hero headline painted 1.5 s in, long after the page's first paint.
+  - The `@font-face` rule has no `font-display`, so Chrome hides the text until the font arrives.
 - **Root cause:** the `@font-face` had no `font-display`, so Chrome hid the text until the font arrived. Here the text then also waited behind the deferred data script.
 - **Fix** (`3e04b88`): `font-display: swap`.
   - I also measured `<link rel="preload">` for the font, which is the usual advice. **It made first paint about 4× later here** (264 → 1,272 ms, reproduced in `results/exp-font-swap-plus-preload.json`), so I left it out. Chrome briefly treats a preloaded font as render-blocking; meanwhile parsing finished, and the first frame got pushed behind the data script.
@@ -199,9 +230,8 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 13. The live ticker leaked intervals, listeners, and DOM nodes
 - **Symptom:** after opening and closing "Show live calls" a few times, the page kept working in the background, and memory kept growing.
 - **How I found it:**
-  - `openTicker` discards the `setInterval` id and never removes its listeners.
-  - In the Performance monitor, the "JS event listeners" count rises with every toggle.
-  - Memory-panel heap snapshots show detached `<li>` nodes growing.
+  - I opened and closed the ticker 10 times. Afterwards, 10 intervals were still running, there were 11 extra listeners, and DOM nodes kept growing while it was closed.
+  - In the code, `openTicker` throws away the `setInterval` id and never removes its listeners.
 - **Root cause:**
   1. The interval was never cleared, so every close left an interval writing rows into a detached list.
   2. The `resize` and `keydown` listeners were added on every open and never removed.
@@ -216,15 +246,19 @@ All at 4× CPU throttling, median of 3 runs (`tools/perf-bench/results/before.js
 ### 14. Card heights were equalized in JavaScript with O(n²) forced layouts
 - **Symptom:** janky resizing, and a clipped card.
 - **How I found it:**
-  - The Performance panel during resize showed "Forced reflow" warnings in `equalizeCardHeights`.
-  - In the CSS, `.agent-grid` had `align-items: start`, opting *out* of the behavior the JavaScript then rebuilt.
+  - Ten window resizes caused 280 layouts.
+  - `equalizeCardHeights` resets a height and then reads every card's geometry, for every card.
+  - In the CSS, `.agent-grid` had `align-items: start`, which opts *out* of the stretching that the JavaScript then rebuilt.
+  - Checking the heights at 900 px also turned up a clipped card.
 - **Root cause:** the function reset each card's height, then read `offsetTop`/`offsetHeight` of every card, for every card. It ran on each of the 24 image loads and on every resize. It also measured before the web font loaded and never re-measured, so at 900 px the "sales-researcher" card clipped its last line (271 px of content in a 268 px card).
 - **Fix** (`1e8a9d8`): delete the JavaScript. Grid's default `align-items: stretch` makes every card in a row as tall as the tallest, and `min-height: 220px` keeps the floor. Heights are identical at 1366 and 1700 px, and the clipping is gone.
 - **Before / after** (10 resizes): layouts **280 → 40**, style recalculations **310 → 70**, script **58 → 29 ms**. Total layout time didn't change (~770 ms); what's left is the browser's own relayout on resize.
 
 ### 15. A new date formatter was created for every row
 - **Symptom:** a smaller cost inside every render and every ticker tick.
-- **How I found it:** the Bottom-Up view in the Performance panel showed `toLocaleTimeString`. I timed it directly.
+- **How I found it:**
+  - `formatTime` calls `toLocaleTimeString(locale, options)`, which builds a new formatter on every call.
+  - I timed 200 calls directly.
 - **Root cause:** `toLocaleTimeString(locale, options)` constructs a new `Intl.DateTimeFormat` on every call: 200 times per render.
 - **Fix** (`3871380`): one shared formatter, with byte-identical output.
 - **Before / after:** 200 calls take **40.2 → 1.3 ms**.
