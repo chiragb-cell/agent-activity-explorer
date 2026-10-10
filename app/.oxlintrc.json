@@ -26,6 +26,8 @@
       { "ignoreElements": ["td", "th", "tr", "input", "textarea", "select"] }
     ],
     "jsx-a11y/label-has-associated-control": "error",
+    // Tests may assert through small helpers (e.g. expectConsistent in virtualWindow.test.ts).
+    "vitest/expect-expect": ["error", { "assertFunctionNames": ["expect", "expectConsistent"] }],
     "eqeqeq": "error"
   },
   "ignorePatterns": ["dist", "coverage", "playwright-report", "test-results"]
