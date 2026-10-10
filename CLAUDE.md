@@ -22,9 +22,12 @@ Requires Node ≥ 22.22 (see `.nvmrc`). Run everything from the repo root:
 | `npm run api` | Mock API only |
 | `npm run perf-clinic` | Serves the Part B page on :5174 |
 | `npm test` | Unit and component tests (Vitest) |
+| `npm run e2e` | Playwright end-to-end and axe tests against the production build, with the API faked per test |
 | `npm run typecheck` / `npm run lint` | `tsc -b` / Oxlint |
 | `npm run build` | Typecheck, then production build |
 | `npm run probe-api` | Measures the mock API: stats and shapes only, no payload text |
+| `npm run bench -- --url <url> --label <name>` | Part B measurements (Playwright + Chrome DevTools Protocol), saved to `tools/perf-bench/results/` |
+| `npm run bench:compare -- <before.json> <after.json>` | Markdown table comparing two saved benchmark runs |
 
 ## Ground rules
 

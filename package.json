@@ -15,6 +15,7 @@
     "lint": "npm run lint -w app",
     "format": "npm run format -w app",
     "test": "npm run test -w app",
+    "e2e": "npm run e2e -w app",
     "probe-api": "node scripts/probe-api.mjs",
     "bench": "node tools/perf-bench/bench.mjs",
     "bench:compare": "node tools/perf-bench/compare.mjs"
