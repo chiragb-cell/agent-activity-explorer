@@ -79,11 +79,32 @@ function rememberViewed(items) {
   }
 }
 
+/* PERF #1: every keystroke serialised all 100,000 events with JSON.stringify and re-sorted
+   them with a comparator that allocated two Date objects per comparison (~3.4 million per
+   keystroke). Now the events are sorted once (ISO-8601 UTC strings sort chronologically,
+   so no Dates), the lowercase search text is built once on the first search, and a search
+   is a single pass of String#includes. Filtering preserves the order, so no re-sort. */
+const newestFirst = window.ACTIVITY.slice().sort((a, b) =>
+  a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0,
+);
+let searchTexts = null;
+
+// Values only: JSON.stringify also matched key names, so "tool" or "agent" matched everything.
+function searchText(event) {
+  return [event.id, event.timestamp, event.agent, event.tool, event.status, event.latencyMs, event.summary]
+    .join(' ')
+    .toLowerCase();
+}
+
 function search(query) {
   const needle = query.trim().toLowerCase();
-  return window.ACTIVITY
-    .filter((event) => JSON.stringify(event).toLowerCase().includes(needle))
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  if (!needle) return newestFirst;
+  if (!searchTexts) searchTexts = newestFirst.map(searchText);
+  const matches = [];
+  for (let i = 0; i < newestFirst.length; i++) {
+    if (searchTexts[i].includes(needle)) matches.push(newestFirst[i]);
+  }
+  return matches;
 }
 
 function renderResults(query) {
@@ -214,7 +235,12 @@ function closeTicker() {
   tickerToggle.textContent = 'Show live calls';
 }
 
-searchInput.addEventListener('input', () => renderResults(searchInput.value));
+// PERF #1: render once the user pauses typing instead of on every keystroke.
+let searchTimer = 0;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => renderResults(searchInput.value), 150);
+});
 window.addEventListener('scroll', onScroll);
 window.addEventListener('resize', equalizeCardHeights);
 window.addEventListener('resize', fitSummaries);
