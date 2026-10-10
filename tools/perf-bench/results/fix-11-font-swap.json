@@ -1,0 +1,66 @@
+{
+  "label": "exp-swap-only",
+  "url": "http://localhost:5174",
+  "measuredAt": "2026-10-10T13:58:52.195Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "load": {
+      "fcpMs": 300,
+      "lcpMs": 5076,
+      "firstLargePaintMs": 300,
+      "cls": 0,
+      "loadEventMs": 5044,
+      "tbtMs": 521,
+      "longTaskMs": 1103,
+      "fontLoadedMs": 425,
+      "requests": 18,
+      "transferKB": 6154
+    }
+  },
+  "raw": {
+    "load": [
+      {
+        "fcpMs": 300,
+        "lcpMs": 5108,
+        "firstLargePaintMs": 300,
+        "cls": 0,
+        "loadEventMs": 5076.099999964237,
+        "tbtMs": 521,
+        "longTaskMs": 1130,
+        "fontLoadedMs": 424.5999999642372,
+        "requests": 19,
+        "transferKB": 6153.9384765625
+      },
+      {
+        "fcpMs": 304,
+        "lcpMs": 5068,
+        "firstLargePaintMs": 304,
+        "cls": 0,
+        "loadEventMs": 5044.199999988079,
+        "tbtMs": 548,
+        "longTaskMs": 1103,
+        "fontLoadedMs": 448.9000000357628,
+        "requests": 18,
+        "transferKB": 6153.9296875
+      },
+      {
+        "fcpMs": 268,
+        "lcpMs": 5076,
+        "firstLargePaintMs": 268,
+        "cls": 0,
+        "loadEventMs": 5027.5,
+        "tbtMs": 464,
+        "longTaskMs": 991,
+        "fontLoadedMs": 403.89999997615814,
+        "requests": 18,
+        "transferKB": 6153.9296875
+      }
+    ]
+  }
+}

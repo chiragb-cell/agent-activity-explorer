@@ -1,7 +1,12 @@
+/* PERF #9: without font-display the browser hides text in this font (up to 3 s) until
+   the file arrives. `swap` shows the text straight away in the fallback font and swaps
+   when the web font is ready. (A <link rel="preload"> for the font was measured too and
+   made first paint ~4x later here: see PERF.md.) */
 @font-face {
   font-family: 'IBM Plex Sans';
   src: url('../fonts/ibm-plex-sans.woff2') format('woff2');
   font-weight: 400 700;
+  font-display: swap;
 }
 
 :root {

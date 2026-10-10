@@ -42,7 +42,7 @@ const INSTRUMENT = `(() => {
       new PerformanceObserver((list) => list.getEntries().forEach(onEntry)).observe({ type, buffered: true, ...extra })
     } catch {}
   }
-  observe('largest-contentful-paint', (e) => { perf.lcp = e.startTime })
+  observe('largest-contentful-paint', (e) => { if (!perf.lcpFirst) perf.lcpFirst = e.startTime; perf.lcp = e.startTime })
   observe('layout-shift', (e) => { if (!e.hadRecentInput) perf.cls += e.value })
   observe('longtask', (e) => { window.__perf.longTasks.push([e.startTime, e.duration]) })
   observe('event', (e) => { window.__perf.events.push([e.name, e.startTime, e.duration]) }, { durationThreshold: 16 })
@@ -118,11 +118,16 @@ async function load(run) {
     return {
       fcpMs: fcp,
       lcpMs: window.__perf.lcp,
+      // The first LCP candidate is usually the hero headline: with invisible-text font
+      // loading it can't paint until the web font arrives.
+      firstLargePaintMs: window.__perf.lcpFirst ?? 0,
       cls: Number(window.__perf.cls.toFixed(3)),
       loadEventMs: nav.loadEventEnd,
       // Total Blocking Time after first paint: the part of each long task beyond 50 ms.
       tbtMs: tasks.filter(([start]) => start >= fcp).reduce((sum, [, d]) => sum + Math.max(0, d - 50), 0),
       longTaskMs: tasks.reduce((sum, [, d]) => sum + d, 0),
+      // When the web font finished downloading (text in it can't render before this).
+      fontLoadedMs: resources.find((r) => r.name.endsWith('.woff2'))?.responseEnd ?? 0,
       requests: resources.length + 1,
       transferKB: (resources.reduce((sum, r) => sum + (r.encodedBodySize || 0), 0) + (nav.encodedBodySize || 0)) / 1024,
     }
