@@ -1,0 +1,58 @@
+{
+  "label": "fix-14-hover",
+  "url": "http://localhost:5176",
+  "measuredAt": "2026-10-10T14:07:33.487Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "hover": {
+      "scriptMsPerMove": 11.82,
+      "longTaskMs": 203,
+      "layoutCount": 100,
+      "layoutMs": 62.77,
+      "styleRecalcCount": 309,
+      "styleMs": 86.87,
+      "scriptMs": 1182,
+      "taskMs": 2694
+    }
+  },
+  "raw": {
+    "hover": [
+      {
+        "scriptMsPerMove": 12.151900000000003,
+        "longTaskMs": 203,
+        "layoutCount": 100,
+        "layoutMs": 62.76699999999996,
+        "styleRecalcCount": 297,
+        "styleMs": 86.873,
+        "scriptMs": 1215.1900000000003,
+        "taskMs": 2649.7610000000004
+      },
+      {
+        "scriptMsPerMove": 11.818959999999999,
+        "longTaskMs": 178,
+        "layoutCount": 100,
+        "layoutMs": 58.817999999999984,
+        "styleRecalcCount": 314,
+        "styleMs": 86.607,
+        "scriptMs": 1181.896,
+        "taskMs": 2694.4370000000004
+      },
+      {
+        "scriptMsPerMove": 11.68721,
+        "longTaskMs": 282,
+        "layoutCount": 100,
+        "layoutMs": 66.81700000000002,
+        "styleRecalcCount": 309,
+        "styleMs": 104.30799999999998,
+        "scriptMs": 1168.721,
+        "taskMs": 2757.8230000000003
+      }
+    ]
+  }
+}

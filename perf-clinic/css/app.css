@@ -314,6 +314,10 @@ main {
 
 .row-preview {
   position: fixed;
+  /* PERF #14: anchored at 0,0 and moved with transform, so following the pointer never
+     triggers layout. */
+  top: 0;
+  left: 0;
   z-index: 30;
   max-width: 320px;
   padding: 8px 12px;

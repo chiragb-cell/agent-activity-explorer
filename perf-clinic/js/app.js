@@ -264,18 +264,37 @@ function callsInMinute(minute) {
 // Build the counts while idle, so the first scroll doesn't pay for 100,000 iterations.
 whenIdle(() => callsInMinute(''));
 
+/* PERF #14: on every mousemove (dozens per second) the preview searched all 100,000 events
+   with Array#find for the hovered row's summary, then moved itself with top/left (layout).
+   The summary is already in the row's own DOM, so it's read from there, and only when the
+   pointer enters a different row; the preview moves with transform (compositor only), at
+   most once per frame. */
+let previewFrame = 0;
+let previewRow = null;
+let lastPointer = null;
+
 function hidePreview() {
   preview.hidden = true;
+  previewRow = null;
+  cancelAnimationFrame(previewFrame);
+  previewFrame = 0;
 }
 
 function showPreview(event) {
-  const row = event.target.closest('.result-row');
+  lastPointer = event;
+  if (!previewFrame) previewFrame = requestAnimationFrame(updatePreview);
+}
+
+function updatePreview() {
+  previewFrame = 0;
+  const row = lastPointer.target.closest('.result-row');
   if (!row) return;
-  const item = window.ACTIVITY.find((candidate) => candidate.id === row.dataset.id);
-  if (!item) return;
-  preview.textContent = item.summary;
-  preview.style.top = event.clientY + 12 + 'px';
-  preview.style.left = event.clientX + 12 + 'px';
+  if (row !== previewRow) {
+    previewRow = row;
+    preview.textContent = row.querySelector('.result-summary').textContent;
+  }
+  preview.style.transform =
+    'translate(' + (lastPointer.clientX + 12) + 'px, ' + (lastPointer.clientY + 12) + 'px)';
   preview.hidden = false;
 }
 
