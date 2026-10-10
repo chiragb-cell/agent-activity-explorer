@@ -7,15 +7,18 @@ import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { explainError } from '../../api/errors'
 import { refreshEventList, useEventList } from '../../api/queries'
 import { MAX_RETRIES } from '../../api/retry'
+import type { EventSummary } from '../../api/schemas'
 import { Button } from '../../components/Button'
 import { LiveRegion } from '../../components/LiveRegion'
 import { ErrorBoundary } from '../../components/ErrorBoundary'
 import { StateMessage } from '../../components/StateMessage'
 import { useDelayedFlag } from '../../hooks/useDelayedFlag'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { cx } from '../../lib/cx'
 import { format } from '../../lib/format'
 import { clearFilters, closeEvent, openEvent, useView } from '../../url/useView'
 import { hasActiveFilters, parseView, serializeView, toEventFilters } from '../../url/view'
+import { DetailDrawer } from '../detail/DetailDrawer'
 import { EventDetailPanel } from '../detail/EventDetailPanel'
 import { Toolbar } from '../filters/Toolbar'
 import { documentTitle } from './documentTitle'
@@ -30,6 +33,8 @@ const SLOW_AFTER_MS = 2000
 export function EventsPage() {
   const view = useView()
   const queryClient = useQueryClient()
+  // Wide enough for the list and the panel side by side; below this the panel is a drawer.
+  const wide = useMediaQuery('(min-width: 1024px)')
   const scrollerRef = useRef<HTMLDivElement>(null)
 
   // Key everything list-related on the filters only, so opening or switching the detail
@@ -142,7 +147,7 @@ export function EventsPage() {
   return (
     <div className={styles.page}>
       <Toolbar view={view} />
-      <div className={cx(styles.content, view.event && styles.withPanel)}>
+      <div className={cx(styles.content, view.event && wide && styles.withPanel)}>
         <section className={styles.list} aria-labelledby="events-heading">
           <div className={styles.listHeader}>
             <h2 id="events-heading" className={styles.listTitle}>
@@ -175,16 +180,33 @@ export function EventsPage() {
             message={announcement(query, total, events.length, filtered, waiting, slow)}
           />
         </section>
-        {view.event ? (
-          // Keyed by event: a render error in one event's panel resets when another
-          // opens, and never takes the list down with it.
-          <ErrorBoundary key={view.event} fallback={PanelCrashed}>
-            <EventDetailPanel id={view.event} summary={summary} onClose={closeEvent} />
-          </ErrorBoundary>
-        ) : null}
+        {view.event ? <DetailPanel id={view.event} summary={summary} wide={wide} /> : null}
       </div>
     </div>
   )
+}
+
+/**
+ * The detail panel: a column beside the list on wide screens (master-detail, the list
+ * stays usable), a modal drawer on tablets where a column would squeeze the table.
+ * Keyed by event, so a render error in one event's panel resets when another opens and
+ * never takes the list down with it.
+ */
+function DetailPanel({
+  id,
+  summary,
+  wide,
+}: {
+  id: string
+  summary: EventSummary | undefined
+  wide: boolean
+}) {
+  const panel = (
+    <ErrorBoundary key={id} fallback={PanelCrashed}>
+      <EventDetailPanel id={id} summary={summary} onClose={closeEvent} closeOnEscape={wide} />
+    </ErrorBoundary>
+  )
+  return wide ? panel : <DetailDrawer onClose={closeEvent}>{panel}</DetailDrawer>
 }
 
 function PanelCrashed() {

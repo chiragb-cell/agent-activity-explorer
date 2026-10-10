@@ -25,9 +25,20 @@ interface EventDetailPanelProps {
   /** The event's row from the list, if it's loaded: shown while the full event loads. */
   summary: EventSummary | undefined
   onClose: () => void
+  /**
+   * Close on Escape from anywhere on the page. Off when the panel sits in the modal
+   * drawer, whose <dialog> handles Escape itself: two handlers would close (and go
+   * Back) twice.
+   */
+  closeOnEscape?: boolean
 }
 
-export function EventDetailPanel({ id, summary, onClose }: EventDetailPanelProps) {
+export function EventDetailPanel({
+  id,
+  summary,
+  onClose,
+  closeOnEscape = true,
+}: EventDetailPanelProps) {
   const headingId = useId()
   const headingRef = useRef<HTMLHeadingElement>(null)
   const detail = useEventDetail(id)
@@ -52,6 +63,7 @@ export function EventDetailPanel({ id, summary, onClose }: EventDetailPanelProps
   )
 
   useEffect(() => {
+    if (!closeOnEscape) return
     function onKeyDown(keyEvent: KeyboardEvent) {
       if (keyEvent.key !== 'Escape' || keyEvent.defaultPrevented) return
       // In a text field Escape belongs to the field (e.g. clearing a search).
@@ -61,7 +73,7 @@ export function EventDetailPanel({ id, summary, onClose }: EventDetailPanelProps
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose])
+  }, [onClose, closeOnEscape])
 
   const notFound = detail.isError && explainError(detail.error).notFound
 

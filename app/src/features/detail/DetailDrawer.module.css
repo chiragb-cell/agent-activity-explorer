@@ -1,0 +1,36 @@
+.drawer {
+  width: min(36rem, 92vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  /* Pinned to the right edge, full height. */
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.drawer::backdrop {
+  background: var(--color-overlay);
+}
+
+/* The panel inside already has its own frame. */
+.drawer > aside {
+  border-left: 0;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .drawer[open] {
+    animation: slide-in 180ms ease-out;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
