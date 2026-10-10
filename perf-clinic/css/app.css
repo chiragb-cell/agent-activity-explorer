@@ -124,12 +124,19 @@ main {
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
+  /* Lets the track move in units of this box's width (cqw), like the old left: N%. */
+  container-type: inline-size;
 }
 
+/* PERF #3: the marquee animated `left`, a layout property, so the main thread had to
+   recalculate style and layout on every frame, forever, even on an untouched page.
+   `transform` is animated by the compositor, off the main thread. translateX(N%) would
+   be relative to the track itself, so container query units keep the exact same path:
+   from the box's right edge (100cqw) to -120% of its width. */
 .alerts-track {
   position: absolute;
   top: 8px;
-  left: 100%;
+  left: 0;
   display: flex;
   gap: 48px;
   white-space: nowrap;
@@ -143,10 +150,23 @@ main {
 
 @keyframes alerts-scroll {
   from {
-    left: 100%;
+    transform: translateX(100cqw);
   }
   to {
-    left: -120%;
+    transform: translateX(-120cqw);
+  }
+}
+
+/* People who ask for less motion get the alerts as a static, scrollable row. */
+@media (prefers-reduced-motion: reduce) {
+  .alerts {
+    overflow-x: auto;
+  }
+
+  .alerts-track {
+    position: static;
+    padding: 8px 20px;
+    animation: none;
   }
 }
 

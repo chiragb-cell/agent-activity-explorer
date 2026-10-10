@@ -1,0 +1,92 @@
+{
+  "label": "fix-05-marquee",
+  "url": "http://localhost:5174",
+  "measuredAt": "2026-10-10T13:43:07.530Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "idle": {
+      "layoutsPerSecond": 0,
+      "styleRecalcsPerSecond": 0,
+      "mainThreadMsPerSecond": 1.42
+    },
+    "typing": {
+      "worstKeystrokeMs": 168,
+      "resultsShownAfterLastKeyMs": 261,
+      "longTaskMs": 290,
+      "blockingMs": 140,
+      "viewedStorageKB": 6.08,
+      "layoutCount": 14,
+      "layoutMs": 200,
+      "styleRecalcCount": 45,
+      "styleMs": 48.47,
+      "scriptMs": 153,
+      "taskMs": 604
+    }
+  },
+  "raw": {
+    "idle": [
+      {
+        "layoutsPerSecond": 0,
+        "styleRecalcsPerSecond": 0,
+        "mainThreadMsPerSecond": 1.011999999999939
+      },
+      {
+        "layoutsPerSecond": 0,
+        "styleRecalcsPerSecond": 0,
+        "mainThreadMsPerSecond": 2.5283333333333915
+      },
+      {
+        "layoutsPerSecond": 0,
+        "styleRecalcsPerSecond": 0,
+        "mainThreadMsPerSecond": 1.4246666666667036
+      }
+    ],
+    "typing": [
+      {
+        "worstKeystrokeMs": 168,
+        "resultsShownAfterLastKeyMs": 262.30000001192093,
+        "longTaskMs": 314,
+        "blockingMs": 164,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 14,
+        "layoutMs": 206.04600000000002,
+        "styleRecalcCount": 43,
+        "styleMs": 46.684000000000005,
+        "scriptMs": 172.0649999999999,
+        "taskMs": 617.9930000000003
+      },
+      {
+        "worstKeystrokeMs": 168,
+        "resultsShownAfterLastKeyMs": 261.4000000357628,
+        "longTaskMs": 290,
+        "blockingMs": 140,
+        "viewedStorageKB": 5.7119140625,
+        "layoutCount": 14,
+        "layoutMs": 199.916,
+        "styleRecalcCount": 48,
+        "styleMs": 58.958000000000006,
+        "scriptMs": 153.29900000000006,
+        "taskMs": 603.5129999999999
+      },
+      {
+        "worstKeystrokeMs": 176,
+        "resultsShownAfterLastKeyMs": 260.60000002384186,
+        "longTaskMs": 220,
+        "blockingMs": 120,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 12,
+        "layoutMs": 138.45699999999994,
+        "styleRecalcCount": 45,
+        "styleMs": 48.467,
+        "scriptMs": 114.336,
+        "taskMs": 492.68100000000015
+      }
+    ]
+  }
+}
