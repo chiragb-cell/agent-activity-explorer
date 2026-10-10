@@ -1,13 +1,15 @@
-// The event list: a semantic <table> (screen readers get real rows and column headers),
-// a single scroll container, and a footer that loads the next page.
+// The event list: a semantic <table> (screen readers get real rows and column headers)
+// in its own scroll container, virtualized by hand so any number of loaded events stays
+// fast, with a footer that loads the next page.
 
-import { memo, useEffect, useRef, type MouseEvent, type RefObject } from 'react'
+import { memo, useEffect, useRef, type MouseEvent, type Ref, type RefObject } from 'react'
 import type { EventSummary } from '../../api/schemas'
 import { Button } from '../../components/Button'
 import { StatusBadge } from '../../components/StatusBadge'
 import { cx } from '../../lib/cx'
 import { format } from '../../lib/format'
 import { statusLabel } from '../../lib/status'
+import { useVirtualRows } from './useVirtualRows'
 import styles from './EventTable.module.css'
 
 export type FooterState =
@@ -47,6 +49,13 @@ export function EventTable({
   skeleton,
   scrollerRef,
 }: EventTableProps) {
+  const headerRef = useRef<HTMLTableSectionElement>(null)
+  const { start, end, padTop, padBottom, measureRow } = useVirtualRows({
+    count: events.length,
+    scrollerRef,
+    headerRef,
+  })
+
   // One delegated handler makes the whole row clickable. Mouse convenience only: the
   // link in each row's first cell is the keyboard and screen-reader path.
   function handleBodyClick(event: MouseEvent<HTMLTableSectionElement>) {
@@ -78,7 +87,7 @@ export function EventTable({
           <col className={styles.colLatency} />
           <col className={cx(styles.colArgs, styles.args)} />
         </colgroup>
-        <thead>
+        <thead ref={headerRef}>
           <tr aria-rowindex={1}>
             <th scope="col">
               Time <span className={styles.timeZone}>({format.timeZoneLabel})</span>
@@ -97,16 +106,22 @@ export function EventTable({
         {/* oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- each row's link is the keyboard path; this is a mouse shortcut */}
         <tbody onClick={handleBodyClick}>
           {skeleton ? <SkeletonRows /> : null}
-          {events.map((event, index) => (
-            <EventRow
-              key={event.id}
-              event={event}
-              rowIndex={index + 2}
-              selected={event.id === selectedId}
-              href={hrefFor(event.id)}
-              onOpen={onOpen}
-            />
-          ))}
+          {padTop > 0 ? <Spacer height={padTop} /> : null}
+          {events.slice(start, end).map((event, offset) => {
+            const index = start + offset
+            return (
+              <EventRow
+                key={event.id}
+                event={event}
+                index={index}
+                selected={event.id === selectedId}
+                href={hrefFor(event.id)}
+                onOpen={onOpen}
+                rowRef={offset === 0 ? measureRow : undefined}
+              />
+            )
+          })}
+          {padBottom > 0 ? <Spacer height={padBottom} /> : null}
         </tbody>
       </table>
       <ListFooter
@@ -119,28 +134,43 @@ export function EventTable({
   )
 }
 
+/** Stands in for the rows that aren't rendered, so the scrollbar reflects the whole list. */
+function Spacer({ height }: { height: number }) {
+  return (
+    <tr className={styles.spacer} style={{ height }} aria-hidden="true">
+      <td colSpan={6} />
+    </tr>
+  )
+}
+
 interface EventRowProps {
   event: EventSummary
-  /** 1-based and counting the header row, as aria-rowindex expects. */
-  rowIndex: number
+  /** Position in the loaded list (0-based). */
+  index: number
   selected: boolean
   href: string
   onOpen: (id: string) => void
+  /** Set on the first rendered row so the virtualizer can measure the real row height. */
+  rowRef?: Ref<HTMLTableRowElement>
 }
 
-// Memoised: selecting a row re-renders only the old and new selection, not every row.
+// Memoised: selecting a row re-renders only the old and new selection, not the window.
 const EventRow = memo(function EventRow({
   event,
-  rowIndex,
+  index,
   selected,
   href,
   onOpen,
+  rowRef,
 }: EventRowProps) {
   return (
     <tr
-      aria-rowindex={rowIndex}
+      ref={rowRef}
+      // 1-based and counting the header row, as aria-rowindex expects.
+      aria-rowindex={index + 2}
       className={cx(styles.row, selected && styles.selected)}
       data-event-id={event.id}
+      data-index={index}
     >
       <td>
         <a

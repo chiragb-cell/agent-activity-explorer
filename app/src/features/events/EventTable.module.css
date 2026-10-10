@@ -193,3 +193,9 @@
     background-position: -100% 0;
   }
 }
+
+/* Spacer rows stand in for rows outside the rendered window. */
+.spacer td {
+  padding: 0;
+  border: 0;
+}
