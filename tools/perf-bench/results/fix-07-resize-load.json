@@ -1,0 +1,96 @@
+{
+  "label": "fix-07-resize-load",
+  "url": "http://localhost:5176",
+  "measuredAt": "2026-10-10T13:52:02.610Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "resize": {
+      "longTaskMs": 896,
+      "layoutCount": 280,
+      "layoutMs": 778,
+      "styleRecalcCount": 310,
+      "styleMs": 76.03,
+      "scriptMs": 57.95,
+      "taskMs": 1389
+    },
+    "load": {
+      "fcpMs": 1784,
+      "lcpMs": 5272,
+      "cls": 0,
+      "loadEventMs": 5250,
+      "tbtMs": 0,
+      "longTaskMs": 1062,
+      "requests": 19,
+      "transferKB": 6472
+    }
+  },
+  "raw": {
+    "resize": [
+      {
+        "longTaskMs": 913,
+        "layoutCount": 280,
+        "layoutMs": 817.4460000000001,
+        "styleRecalcCount": 310,
+        "styleMs": 76.03,
+        "scriptMs": 57.949999999999946,
+        "taskMs": 1410.4710000000002
+      },
+      {
+        "longTaskMs": 873,
+        "layoutCount": 280,
+        "layoutMs": 769.436,
+        "styleRecalcCount": 309,
+        "styleMs": 74.248,
+        "scriptMs": 63.347999999999956,
+        "taskMs": 1350.4399999999998
+      },
+      {
+        "longTaskMs": 896,
+        "layoutCount": 280,
+        "layoutMs": 777.8249999999999,
+        "styleRecalcCount": 310,
+        "styleMs": 77.012,
+        "scriptMs": 55.50599999999983,
+        "taskMs": 1389.4099999999999
+      }
+    ],
+    "load": [
+      {
+        "fcpMs": 1856,
+        "lcpMs": 5272,
+        "cls": 0,
+        "loadEventMs": 5250,
+        "tbtMs": 0,
+        "longTaskMs": 1135,
+        "requests": 19,
+        "transferKB": 6472.1689453125
+      },
+      {
+        "fcpMs": 1756,
+        "lcpMs": 5272,
+        "cls": 0,
+        "loadEventMs": 5244.100000023842,
+        "tbtMs": 0,
+        "longTaskMs": 1036,
+        "requests": 19,
+        "transferKB": 6472.1689453125
+      },
+      {
+        "fcpMs": 1784,
+        "lcpMs": 5292,
+        "cls": 0,
+        "loadEventMs": 5277.599999964237,
+        "tbtMs": 0,
+        "longTaskMs": 1062,
+        "requests": 19,
+        "transferKB": 6472.1689453125
+      }
+    ]
+  }
+}

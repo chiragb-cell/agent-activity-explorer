@@ -195,10 +195,12 @@ main {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
-  align-items: start;
+  /* PERF #6: the default align-items: stretch makes every card in a row as tall as the
+     tallest one, which is what equalizeCardHeights() used to compute in JavaScript. */
 }
 
 .agent-card {
+  min-height: 220px;
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 12px;

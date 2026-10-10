@@ -11,8 +11,6 @@ const tickerToggle = document.getElementById('ticker-toggle');
 const preview = document.getElementById('row-preview');
 const scrollContext = document.getElementById('scroll-context');
 
-const minCardHeight = 220;
-
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -57,23 +55,14 @@ function renderAgents() {
       '</article>'
     );
   }).join('');
-  grid.querySelectorAll('img').forEach((img) => img.addEventListener('load', equalizeCardHeights));
 }
 
-function equalizeCardHeights() {
-  const cards = grid.querySelectorAll('.agent-card');
-  cards.forEach((card) => {
-    card.style.height = '';
-    const rowTop = card.offsetTop;
-    let tallest = Math.max(card.offsetHeight, minCardHeight);
-    cards.forEach((other) => {
-      if (other.offsetTop === rowTop) {
-        tallest = Math.max(tallest, other.offsetHeight);
-      }
-    });
-    card.style.height = tallest + 'px';
-  });
-}
+/* PERF #6: equalizeCardHeights gave cards in a row equal heights by reading offsetTop and
+   offsetHeight of every card for every card (O(n²)), interleaved with height writes, so
+   each read forced a layout. It ran on each of the 24 image loads and on every resize
+   event. CSS grid already stretches items in a row to the tallest one (align-items:
+   stretch is the default; the stylesheet had opted out), so the JavaScript is gone and
+   .agent-card has min-height: 220px instead. Same heights, zero script. */
 
 /* PERF #3: localStorage is synchronous, and every render parsed the whole "viewed" list,
    scanned it with includes() (O(n) per row), then called setItem 200 times, once per row,
@@ -349,7 +338,6 @@ searchInput.addEventListener('input', () => {
   searchTimer = setTimeout(() => renderResults(searchInput.value), 150);
 });
 window.addEventListener('scroll', onScroll, { passive: true });
-window.addEventListener('resize', equalizeCardHeights);
 // PERF #2: resize fires many times per second while dragging; refit at most once per frame.
 let fitFrame = 0;
 window.addEventListener('resize', () => {
@@ -370,5 +358,4 @@ backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 's
 tickerToggle.addEventListener('click', () => (tickerPanel ? closeTicker() : openTicker()));
 
 renderAgents();
-equalizeCardHeights();
 renderResults('');
