@@ -13,8 +13,18 @@ A frontend take-home in two parts. The brief is `ASSIGNMENT.md`. Read it before 
 
 ## Commands
 
-- `npm run api`: starts the mock API on :4000.
-- `npm run perf-clinic`: serves the Part B page on :5174.
+Requires Node ≥ 22.22 (see `.nvmrc`). Run everything from the repo root:
+
+| Command | What it does |
+|---|---|
+| `npm install` | Installs every workspace |
+| `npm run dev` | Mock API (:4000) and the app (:5173) together |
+| `npm run api` | Mock API only |
+| `npm run perf-clinic` | Serves the Part B page on :5174 |
+| `npm test` | Unit and component tests (Vitest) |
+| `npm run typecheck` / `npm run lint` | `tsc -b` / Oxlint |
+| `npm run build` | Typecheck, then production build |
+| `npm run probe-api` | Measures the mock API: stats and shapes only, no payload text |
 
 ## Ground rules
 
