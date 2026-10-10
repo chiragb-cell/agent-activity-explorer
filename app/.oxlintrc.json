@@ -19,9 +19,13 @@
       "warn",
       { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }
     ],
-    // Table cells are not controls; the rule only looks 2 levels deep for text, so a cell
-    // holding a link (td > a > time > text) was a false positive.
-    "jsx-a11y/control-has-associated-label": ["error", { "ignoreElements": ["td", "th"] }],
+    // Cells aren't controls, and form fields are checked by label-has-associated-control
+    // (this rule can't see <label htmlFor> or wrapping labels), as the jsx-a11y docs advise.
+    "jsx-a11y/control-has-associated-label": [
+      "error",
+      { "ignoreElements": ["td", "th", "tr", "input", "textarea", "select"] }
+    ],
+    "jsx-a11y/label-has-associated-control": "error",
     "eqeqeq": "error"
   },
   "ignorePatterns": ["dist", "coverage", "playwright-report", "test-results"]

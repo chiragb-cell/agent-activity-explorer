@@ -14,6 +14,7 @@ import { useDelayedFlag } from '../../hooks/useDelayedFlag'
 import { format } from '../../lib/format'
 import { clearFilters, openEvent, useView } from '../../url/useView'
 import { hasActiveFilters, parseView, serializeView, toEventFilters } from '../../url/view'
+import { Toolbar } from '../filters/Toolbar'
 import { EventTable, type FooterState } from './EventTable'
 import styles from './EventsPage.module.css'
 
@@ -124,36 +125,43 @@ export function EventsPage() {
   }
 
   return (
-    <section className={styles.list} aria-labelledby="events-heading">
-      <div className={styles.listHeader}>
-        <h2 id="events-heading" className={styles.listTitle}>
-          Events
-        </h2>
-        <p className={styles.count}>{countText(total, events.length, filtered, waiting)}</p>
-        <Activity query={query} slow={slow} />
-        <Button
-          size="sm"
-          variant="ghost"
-          className={styles.refresh}
-          onClick={refresh}
-          disabled={isFetching}
-        >
-          Refresh
-        </Button>
+    <div className={styles.page}>
+      <Toolbar view={view} />
+      <div className={styles.content}>
+        <section className={styles.list} aria-labelledby="events-heading">
+          <div className={styles.listHeader}>
+            <h2 id="events-heading" className={styles.listTitle}>
+              Events
+            </h2>
+            <p className={styles.count}>{countText(total, events.length, filtered, waiting)}</p>
+            <Activity query={query} slow={slow} />
+            <Button
+              size="sm"
+              variant="ghost"
+              className={styles.refresh}
+              onClick={refresh}
+              disabled={isFetching}
+            >
+              Refresh
+            </Button>
+          </div>
+          {query.isRefetchError ? (
+            <div className={styles.banner} role="alert">
+              <span>
+                Couldn’t refresh. {explainError(query.error).message} Showing the earlier results.
+              </span>
+              <Button size="sm" onClick={refresh}>
+                Try again
+              </Button>
+            </div>
+          ) : null}
+          {body}
+          <LiveRegion
+            message={announcement(query, total, events.length, filtered, waiting, slow)}
+          />
+        </section>
       </div>
-      {query.isRefetchError ? (
-        <div className={styles.banner} role="alert">
-          <span>
-            Couldn’t refresh. {explainError(query.error).message} Showing the earlier results.
-          </span>
-          <Button size="sm" onClick={refresh}>
-            Try again
-          </Button>
-        </div>
-      ) : null}
-      {body}
-      <LiveRegion message={announcement(query, total, events.length, filtered, waiting, slow)} />
-    </section>
+    </div>
   )
 }
 

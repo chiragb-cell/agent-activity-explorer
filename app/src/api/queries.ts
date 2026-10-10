@@ -4,17 +4,19 @@
 import {
   keepPreviousData,
   useInfiniteQuery,
+  useQuery,
   type InfiniteData,
   type QueryClient,
 } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { fetchEventsPage, type EventFilters } from './endpoints'
+import { fetchAgents, fetchEventsPage, type EventFilters } from './endpoints'
 import type { EventSummary, EventsPage } from './schemas'
 
 type Cursor = string | undefined
 
 export const queryKeys = {
   eventList: (filters: EventFilters) => ['events', 'list', filters] as const,
+  agents: ['agents'] as const,
 }
 
 export function useEventList(filters: EventFilters) {
@@ -66,4 +68,13 @@ export async function refreshEventList(queryClient: QueryClient, filters: EventF
     data ? { pages: data.pages.slice(0, 1), pageParams: data.pageParams.slice(0, 1) } : data,
   )
   await queryClient.refetchQueries({ queryKey, exact: true })
+}
+
+/** Agent names for the filter. They rarely change, so five minutes of freshness is plenty. */
+export function useAgents() {
+  return useQuery({
+    queryKey: queryKeys.agents,
+    queryFn: ({ signal }) => fetchAgents(signal),
+    staleTime: 5 * 60_000,
+  })
 }

@@ -9,6 +9,7 @@ import { EMPTY_VIEW, parseView, serializeView, type ViewState } from './view'
 import type { KnownStatus } from '../api/schemas'
 
 const listeners = new Set<() => void>()
+const searchListeners = new Set<(q: string) => void>()
 
 function subscribe(listener: () => void) {
   listeners.add(listener)
@@ -55,10 +56,38 @@ function update(change: (current: ViewState) => ViewState, navigation: Navigatio
   if (action.method === 'push') window.history.pushState(action.state, '', urlFor(next))
   else window.history.replaceState(action.state, '', urlFor(next))
   notify()
+  if (navigation.type !== 'search' && next.q !== current.q) {
+    searchListeners.forEach((listener) => listener(next.q))
+  }
 }
 
+/**
+ * Calls `listener` when the URL's search text changes for any reason other than the
+ * search box's own `setSearch`: Back/Forward, "Clear filters", or removing the search chip.
+ *
+ * The search box keeps a local draft (it's debounced into the URL), so it needs this to
+ * show the new value and to drop a pending edit that would otherwise overwrite that
+ * navigation, or, after Back, push a new entry and wipe the Forward history.
+ * Comparing URL and draft instead would race with the box's own debounced writes.
+ */
+export function onSearchChangedElsewhere(listener: (q: string) => void) {
+  const onPopState = () => listener(parseView(window.location.search).q)
+  searchListeners.add(listener)
+  window.addEventListener('popstate', onPopState)
+  return () => {
+    searchListeners.delete(listener)
+    window.removeEventListener('popstate', onPopState)
+  }
+}
+
+/** The search box's own edits: consecutive ones collapse into one history entry. */
 export function setSearch(q: string) {
   update((view) => ({ ...view, q: q.trim() }), { type: 'search' })
+}
+
+/** Removing the search as a discrete action (e.g. its chip): its own history entry. */
+export function clearSearch() {
+  update((view) => ({ ...view, q: '' }), { type: 'filter' })
 }
 
 export function setStatus(status: KnownStatus | null) {

@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   canonicalizeUrl,
   clearFilters,
+  clearSearch,
   closeEvent,
+  onSearchChangedElsewhere,
   openEvent,
   setSearch,
   setStatus,
@@ -74,6 +76,37 @@ describe('useView', () => {
     window.history.replaceState(null, '', '/?q=x&status=ok&event=evt_1')
     act(() => clearFilters())
     expect(window.location.search).toBe('?event=evt_1')
+  })
+})
+
+describe('onSearchChangedElsewhere', () => {
+  it('fires for Back, Clear filters and removing the search, but not for search edits', async () => {
+    const heard: string[] = []
+    const stop = onSearchChangedElsewhere((q) => heard.push(q))
+    try {
+      act(() => setSearch('refund')) // The search box's own edit: must stay silent.
+      expect(heard).toEqual([])
+
+      act(() => clearSearch())
+      expect(heard).toEqual([''])
+
+      act(() => setSearch('sql'))
+      act(() => clearFilters())
+      expect(heard).toEqual(['', ''])
+
+      act(() => window.history.back())
+      await waitFor(() => expect(heard).toEqual(['', '', 'sql']))
+    } finally {
+      stop()
+    }
+  })
+
+  it('stays silent when a non-search change leaves the search untouched', () => {
+    const heard: string[] = []
+    const stop = onSearchChangedElsewhere((q) => heard.push(q))
+    act(() => setStatus('error'))
+    stop()
+    expect(heard).toEqual([])
   })
 })
 
