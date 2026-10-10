@@ -1,0 +1,124 @@
+{
+  "label": "fix-04-idle-index",
+  "url": "http://localhost:5174",
+  "measuredAt": "2026-10-10T13:41:34.768Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "typing": {
+      "worstKeystrokeMs": 760,
+      "resultsShownAfterLastKeyMs": 253,
+      "longTaskMs": 832,
+      "blockingMs": 732,
+      "viewedStorageKB": 6.08,
+      "layoutCount": 425,
+      "layoutMs": 244,
+      "styleRecalcCount": 426,
+      "styleMs": 107,
+      "scriptMs": 742,
+      "taskMs": 3781
+    },
+    "returning": {
+      "worstKeystrokeMs": 712,
+      "resultsShownAfterLastKeyMs": 264,
+      "longTaskMs": 851,
+      "blockingMs": 701,
+      "viewedStorageKB": 327,
+      "layoutCount": 435,
+      "layoutMs": 288,
+      "styleRecalcCount": 436,
+      "styleMs": 108,
+      "scriptMs": 734,
+      "taskMs": 3884
+    }
+  },
+  "raw": {
+    "typing": [
+      {
+        "worstKeystrokeMs": 760,
+        "resultsShownAfterLastKeyMs": 253,
+        "longTaskMs": 891,
+        "blockingMs": 741,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 432,
+        "layoutMs": 317.1120000000001,
+        "styleRecalcCount": 433,
+        "styleMs": 117.63000000000001,
+        "scriptMs": 743.36,
+        "taskMs": 3970.375
+      },
+      {
+        "worstKeystrokeMs": 768,
+        "resultsShownAfterLastKeyMs": 270.39999997615814,
+        "longTaskMs": 832,
+        "blockingMs": 732,
+        "viewedStorageKB": 5.7119140625,
+        "layoutCount": 420,
+        "layoutMs": 244.15199999999993,
+        "styleRecalcCount": 421,
+        "styleMs": 106.57500000000002,
+        "scriptMs": 742.173,
+        "taskMs": 3780.7450000000003
+      },
+      {
+        "worstKeystrokeMs": 760,
+        "resultsShownAfterLastKeyMs": 252,
+        "longTaskMs": 792,
+        "blockingMs": 692,
+        "viewedStorageKB": 6.078125,
+        "layoutCount": 425,
+        "layoutMs": 235.83100000000007,
+        "styleRecalcCount": 426,
+        "styleMs": 94.73600000000002,
+        "scriptMs": 704.1129999999999,
+        "taskMs": 3716.5629999999996
+      }
+    ],
+    "returning": [
+      {
+        "worstKeystrokeMs": 696,
+        "resultsShownAfterLastKeyMs": 276.69999998807907,
+        "longTaskMs": 851,
+        "blockingMs": 701,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 419,
+        "layoutMs": 287.931,
+        "styleRecalcCount": 420,
+        "styleMs": 107.558,
+        "scriptMs": 733.6890000000002,
+        "taskMs": 3786.402
+      },
+      {
+        "worstKeystrokeMs": 720,
+        "resultsShownAfterLastKeyMs": 251.19999998807907,
+        "longTaskMs": 773,
+        "blockingMs": 673,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 435,
+        "layoutMs": 216.00800000000004,
+        "styleRecalcCount": 436,
+        "styleMs": 102.187,
+        "scriptMs": 703.537,
+        "taskMs": 3883.585
+      },
+      {
+        "worstKeystrokeMs": 712,
+        "resultsShownAfterLastKeyMs": 264.30000001192093,
+        "longTaskMs": 1059,
+        "blockingMs": 809,
+        "viewedStorageKB": 327.259765625,
+        "layoutCount": 443,
+        "layoutMs": 455.63700000000006,
+        "styleRecalcCount": 444,
+        "styleMs": 125.837,
+        "scriptMs": 841.417,
+        "taskMs": 4266.874
+      }
+    ]
+  }
+}

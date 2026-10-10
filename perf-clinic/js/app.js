@@ -115,8 +115,6 @@ function rememberViewed(items) {
 const newestFirst = window.ACTIVITY.slice().sort((a, b) =>
   a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0,
 );
-let searchTexts = null;
-
 // Values only: JSON.stringify also matched key names, so "tool" or "agent" matched everything.
 function searchText(event) {
   return [event.id, event.timestamp, event.agent, event.tool, event.status, event.latencyMs, event.summary]
@@ -124,10 +122,34 @@ function searchText(event) {
     .toLowerCase();
 }
 
+// The index takes ~700 ms to build at 4x CPU, so it is built in small slices while the
+// browser is idle after load, instead of stalling the user's first keystroke. If they
+// search before it is done, the rest is built on the spot.
+const searchTexts = [];
+// Safari has no requestIdleCallback: fall back to short timer slices with an 8 ms budget
+// (measured from when the slice runs, not from when it was scheduled).
+const whenIdle =
+  window.requestIdleCallback ||
+  ((callback) =>
+    setTimeout(() => {
+      const start = performance.now();
+      callback({ timeRemaining: () => Math.max(0, 8 - (performance.now() - start)) });
+    }, 50));
+
+function buildSearchTexts(deadline) {
+  while (searchTexts.length < newestFirst.length && deadline.timeRemaining() > 1) {
+    searchTexts.push(searchText(newestFirst[searchTexts.length]));
+  }
+  if (searchTexts.length < newestFirst.length) whenIdle(buildSearchTexts);
+}
+whenIdle(buildSearchTexts);
+
 function search(query) {
   const needle = query.trim().toLowerCase();
   if (!needle) return newestFirst;
-  if (!searchTexts) searchTexts = newestFirst.map(searchText);
+  while (searchTexts.length < newestFirst.length) {
+    searchTexts.push(searchText(newestFirst[searchTexts.length]));
+  }
   const matches = [];
   for (let i = 0; i < newestFirst.length; i++) {
     if (searchTexts[i].includes(needle)) matches.push(newestFirst[i]);
