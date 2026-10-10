@@ -1,9 +1,14 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Component, type ComponentType, type ErrorInfo, type ReactNode } from 'react'
+
+export interface FallbackProps {
+  /** Re-renders the children, e.g. from a "Try again" button. */
+  reset: () => void
+}
 
 interface ErrorBoundaryProps {
   children: ReactNode
-  /** Rendered instead of the children after a render error; `reset` re-renders them. */
-  fallback: (reset: () => void) => ReactNode
+  /** Shown instead of the children after a render error. A component, so it is stable. */
+  fallback: ComponentType<FallbackProps>
 }
 
 interface ErrorBoundaryState {
@@ -29,6 +34,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   reset = () => this.setState({ hasError: false })
 
   override render() {
-    return this.state.hasError ? this.props.fallback(this.reset) : this.props.children
+    const { fallback: Fallback, children } = this.props
+    return this.state.hasError ? <Fallback reset={this.reset} /> : children
   }
 }

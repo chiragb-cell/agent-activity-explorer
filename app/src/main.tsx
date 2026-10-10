@@ -3,9 +3,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
 import { createQueryClient } from './api/queryClient'
-import { Button } from './components/Button'
+import { AppCrashed } from './components/AppCrashed'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { StateMessage } from './components/StateMessage'
 import { canonicalizeUrl } from './url/useView'
 import './styles/tokens.css'
 import './styles/global.css'
@@ -20,26 +19,7 @@ if (!container) throw new Error('index.html is missing the #root element')
 createRoot(container).render(
   <StrictMode>
     <QueryClientProvider client={createQueryClient()}>
-      <ErrorBoundary
-        fallback={(reset) => (
-          <StateMessage
-            title="Something went wrong"
-            tone="error"
-            role="alert"
-            actions={
-              <>
-                <Button variant="primary" onClick={reset}>
-                  Try again
-                </Button>
-                <Button onClick={() => window.location.reload()}>Reload page</Button>
-              </>
-            }
-          >
-            The page hit an unexpected error. Your filters are saved in the URL, so reloading brings
-            you back to the same view.
-          </StateMessage>
-        )}
-      >
+      <ErrorBoundary fallback={AppCrashed}>
         <App />
       </ErrorBoundary>
     </QueryClientProvider>

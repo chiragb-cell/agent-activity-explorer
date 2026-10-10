@@ -11,6 +11,16 @@
   min-height: 0;
 }
 
+/* Master-detail: the list keeps working while an event is open beside it. */
+.withPanel {
+  grid-template-columns: minmax(0, 1fr) clamp(22rem, 38vw, 38rem);
+}
+
+.panelError {
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
 .list {
   display: flex;
   flex-direction: column;

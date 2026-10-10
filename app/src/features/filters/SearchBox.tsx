@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback'
+import { isTextEntry } from '../../lib/dom'
 import { onSearchChangedElsewhere, setSearch } from '../../url/useView'
 import styles from './SearchBox.module.css'
 
@@ -79,15 +80,5 @@ export function SearchBox({ value }: { value: string }) {
         /
       </kbd>
     </search>
-  )
-}
-
-function isTextEntry(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false
-  return (
-    target.isContentEditable ||
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement
   )
 }

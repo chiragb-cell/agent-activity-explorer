@@ -9,12 +9,16 @@ import { refreshEventList, useEventList } from '../../api/queries'
 import { MAX_RETRIES } from '../../api/retry'
 import { Button } from '../../components/Button'
 import { LiveRegion } from '../../components/LiveRegion'
+import { ErrorBoundary } from '../../components/ErrorBoundary'
 import { StateMessage } from '../../components/StateMessage'
 import { useDelayedFlag } from '../../hooks/useDelayedFlag'
+import { cx } from '../../lib/cx'
 import { format } from '../../lib/format'
-import { clearFilters, openEvent, useView } from '../../url/useView'
+import { clearFilters, closeEvent, openEvent, useView } from '../../url/useView'
 import { hasActiveFilters, parseView, serializeView, toEventFilters } from '../../url/view'
+import { EventDetailPanel } from '../detail/EventDetailPanel'
 import { Toolbar } from '../filters/Toolbar'
+import { documentTitle } from './documentTitle'
 import { EventTable, type FooterState } from './EventTable'
 import styles from './EventsPage.module.css'
 
@@ -45,6 +49,17 @@ export function EventsPage() {
     scrolledForFilters.current = filtersSearch
     scrollerRef.current?.scrollTo({ top: 0 })
   }, [filtersSearch])
+
+  useEffect(() => {
+    document.title = documentTitle(view)
+  }, [view])
+
+  // The open event's row, if it's loaded, so the panel can show it before the full
+  // event arrives.
+  const summary = useMemo(
+    () => (view.event ? events.find((event) => event.id === view.event) : undefined),
+    [events, view.event],
+  )
 
   const hrefFor = useCallback(
     (id: string) =>
@@ -127,7 +142,7 @@ export function EventsPage() {
   return (
     <div className={styles.page}>
       <Toolbar view={view} />
-      <div className={styles.content}>
+      <div className={cx(styles.content, view.event && styles.withPanel)}>
         <section className={styles.list} aria-labelledby="events-heading">
           <div className={styles.listHeader}>
             <h2 id="events-heading" className={styles.listTitle}>
@@ -160,8 +175,30 @@ export function EventsPage() {
             message={announcement(query, total, events.length, filtered, waiting, slow)}
           />
         </section>
+        {view.event ? (
+          // Keyed by event: a render error in one event's panel resets when another
+          // opens, and never takes the list down with it.
+          <ErrorBoundary key={view.event} fallback={PanelCrashed}>
+            <EventDetailPanel id={view.event} summary={summary} onClose={closeEvent} />
+          </ErrorBoundary>
+        ) : null}
       </div>
     </div>
+  )
+}
+
+function PanelCrashed() {
+  return (
+    <aside className={styles.panelError} aria-label="Event details">
+      <StateMessage
+        title="This event couldn’t be displayed"
+        tone="error"
+        role="alert"
+        actions={<Button onClick={closeEvent}>Close panel</Button>}
+      >
+        Something in its data broke the page. The list still works.
+      </StateMessage>
+    </aside>
   )
 }
 

@@ -9,7 +9,7 @@ import {
   type QueryClient,
 } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { fetchAgents, fetchEventsPage, type EventFilters } from './endpoints'
+import { fetchAgents, fetchEvent, fetchEventsPage, type EventFilters } from './endpoints'
 import type { EventSummary, EventsPage } from './schemas'
 
 type Cursor = string | undefined
@@ -17,6 +17,7 @@ type Cursor = string | undefined
 export const queryKeys = {
   eventList: (filters: EventFilters) => ['events', 'list', filters] as const,
   agents: ['agents'] as const,
+  event: (id: string) => ['events', 'detail', id] as const,
 }
 
 export function useEventList(filters: EventFilters) {
@@ -76,5 +77,18 @@ export function useAgents() {
     queryKey: queryKeys.agents,
     queryFn: ({ signal }) => fetchAgents(signal),
     staleTime: 5 * 60_000,
+  })
+}
+
+/**
+ * The full event for the detail panel. Events never change once recorded, so a loaded
+ * event is fresh forever; a 404 is not retried (see retry.ts), so "not found" shows
+ * after exactly one request.
+ */
+export function useEventDetail(id: string) {
+  return useQuery({
+    queryKey: queryKeys.event(id),
+    queryFn: ({ signal }) => fetchEvent(id, signal),
+    staleTime: Infinity,
   })
 }
