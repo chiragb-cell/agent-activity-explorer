@@ -65,18 +65,36 @@ function equalizeCardHeights() {
   });
 }
 
-function loadViewed() {
-  return JSON.parse(localStorage.getItem(storageKey) || '[]');
+/* PERF #3: localStorage is synchronous, and every render parsed the whole "viewed" list,
+   scanned it with includes() (O(n) per row), then called setItem 200 times, once per row,
+   re-serialising the ever-growing list each time. Now the list lives in memory as a Set
+   (O(1) lookups), is read from storage once, and is written once per render, when the
+   browser is idle. Storage failures (quota, private mode) no longer break rendering. */
+const viewed = readViewed();
+let viewedSavePending = false;
+
+function readViewed() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'));
+  } catch {
+    return new Set();
+  }
 }
 
 function rememberViewed(items) {
-  const viewed = loadViewed();
-  for (const item of items) {
-    if (!viewed.includes(item.id)) {
-      viewed.push(item.id);
+  for (const item of items) viewed.add(item.id);
+  if (viewedSavePending) return;
+  viewedSavePending = true;
+  const save = () => {
+    viewedSavePending = false;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify([...viewed]));
+    } catch {
+      // Out of quota or storage disabled: "New" badges just won't persist across visits.
     }
-    localStorage.setItem(storageKey, JSON.stringify(viewed));
-  }
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(save, { timeout: 2000 });
+  else setTimeout(save, 500);
 }
 
 /* PERF #1: every keystroke serialised all 100,000 events with JSON.stringify and re-sorted
@@ -110,10 +128,9 @@ function search(query) {
 function renderResults(query) {
   const matches = search(query);
   const page = matches.slice(0, pageSize);
-  const viewed = loadViewed();
   resultsCount.textContent = matches.length.toLocaleString() + ' matching tool calls';
   resultsList.innerHTML = page.map((event) => {
-    const isNew = !viewed.includes(event.id);
+    const isNew = !viewed.has(event.id);
     return (
       '<li class="result-row status-' + event.status + '" data-id="' + event.id + '" data-minute="' + event.timestamp.slice(11, 16) + '">' +
       '<span class="result-time">' + formatTime(event.timestamp) + '</span>' +

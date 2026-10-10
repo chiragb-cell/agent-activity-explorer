@@ -61,7 +61,7 @@ const INSTRUMENT = `(() => {
   window.__intervalTicks = () => ticks
 })()`
 
-const SCENARIOS = { load, typing, scroll, hover, resize, idle, ticker }
+const SCENARIOS = { load, typing, returning, scroll, hover, resize, idle, ticker }
 const selected = args.scenarios ? args.scenarios.split(',') : Object.keys(SCENARIOS)
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
@@ -132,8 +132,15 @@ async function load(run) {
 }
 
 /** Typing "billing" into search at a realistic ~400 characters a minute. */
-async function typing(run) {
+async function typing(run, { seedViewed = 0 } = {}) {
   const { context, page, cdp } = await open()
+  if (seedViewed) {
+    await page.addInitScript((n) => {
+      if (localStorage.getItem('activity:viewed')) return
+      const ids = Array.from({ length: n }, (_, i) => `evt_seen_${i}`)
+      localStorage.setItem('activity:viewed', JSON.stringify(ids))
+    }, seedViewed)
+  }
   await ready(page)
   await page.click('#search')
   await page.evaluate(() => {
@@ -167,6 +174,11 @@ async function typing(run) {
   })
   await context.close()
   return { ...inPage, ...work(before, after) }
+}
+
+/** The same typing, for a returning user whose "viewed" list already holds 20,000 ids. */
+async function returning(run) {
+  return typing(run, { seedViewed: 20_000 })
 }
 
 /** Wheel-scrolling down the page, the way a person reads it. */

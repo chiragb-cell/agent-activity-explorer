@@ -1,0 +1,70 @@
+{
+  "label": "fix-03-storage-returning",
+  "url": "http://localhost:5174",
+  "measuredAt": "2026-10-10T13:37:47.123Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "returning": {
+      "worstKeystrokeMs": 864,
+      "resultsShownAfterLastKeyMs": 343,
+      "longTaskMs": 913,
+      "blockingMs": 863,
+      "viewedStorageKB": 327,
+      "layoutCount": 339,
+      "layoutMs": 243,
+      "styleRecalcCount": 340,
+      "styleMs": 104,
+      "scriptMs": 874,
+      "taskMs": 3961
+    }
+  },
+  "raw": {
+    "returning": [
+      {
+        "worstKeystrokeMs": 776,
+        "resultsShownAfterLastKeyMs": 310.2000000476837,
+        "longTaskMs": 887,
+        "blockingMs": 787,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 331,
+        "layoutMs": 242.5649999999999,
+        "styleRecalcCount": 332,
+        "styleMs": 114.21100000000001,
+        "scriptMs": 805.083,
+        "taskMs": 3909.671
+      },
+      {
+        "worstKeystrokeMs": 976,
+        "resultsShownAfterLastKeyMs": 1074.9000000357628,
+        "longTaskMs": 913,
+        "blockingMs": 863,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 353,
+        "layoutMs": 187.51200000000006,
+        "styleRecalcCount": 354,
+        "styleMs": 95.809,
+        "scriptMs": 874.2830000000001,
+        "taskMs": 4138.786
+      },
+      {
+        "worstKeystrokeMs": 864,
+        "resultsShownAfterLastKeyMs": 343.30000001192093,
+        "longTaskMs": 980,
+        "blockingMs": 880,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 339,
+        "layoutMs": 247.657,
+        "styleRecalcCount": 340,
+        "styleMs": 103.75800000000001,
+        "scriptMs": 898.816,
+        "taskMs": 3960.821
+      }
+    ]
+  }
+}

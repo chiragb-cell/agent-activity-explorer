@@ -1,0 +1,70 @@
+{
+  "label": "fix-02-returning",
+  "url": "http://localhost:5176",
+  "measuredAt": "2026-10-10T13:38:27.408Z",
+  "chrome": "154.0.8037.98",
+  "conditions": {
+    "cpuThrottling": 4,
+    "loadNetwork": "10 Mbps down, 40 ms RTT",
+    "viewport": "1366x800",
+    "runs": 3
+  },
+  "results": {
+    "returning": {
+      "worstKeystrokeMs": 1912,
+      "resultsShownAfterLastKeyMs": 1281,
+      "longTaskMs": 2936,
+      "blockingMs": 2836,
+      "viewedStorageKB": 327,
+      "layoutCount": 170,
+      "layoutMs": 217,
+      "styleRecalcCount": 171,
+      "styleMs": 62.16,
+      "scriptMs": 2822,
+      "taskMs": 5015
+    }
+  },
+  "raw": {
+    "returning": [
+      {
+        "worstKeystrokeMs": 1912,
+        "resultsShownAfterLastKeyMs": 1256.5999999642372,
+        "longTaskMs": 2936,
+        "blockingMs": 2836,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 170,
+        "layoutMs": 283.64099999999996,
+        "styleRecalcCount": 171,
+        "styleMs": 62.160999999999994,
+        "scriptMs": 2822.3129999999996,
+        "taskMs": 5014.8189999999995
+      },
+      {
+        "worstKeystrokeMs": 2040,
+        "resultsShownAfterLastKeyMs": 1280.6000000238419,
+        "longTaskMs": 3076,
+        "blockingMs": 2976,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 183,
+        "layoutMs": 216.924,
+        "styleRecalcCount": 184,
+        "styleMs": 70.381,
+        "scriptMs": 2983.2729999999997,
+        "taskMs": 5132.129000000001
+      },
+      {
+        "worstKeystrokeMs": 56,
+        "resultsShownAfterLastKeyMs": 2292,
+        "longTaskMs": 0,
+        "blockingMs": 0,
+        "viewedStorageKB": 326.8935546875,
+        "layoutCount": 123,
+        "layoutMs": 106.72900000000007,
+        "styleRecalcCount": 124,
+        "styleMs": 49.724999999999994,
+        "scriptMs": 1931.916,
+        "taskMs": 3304.7260000000006
+      }
+    ]
+  }
+}
